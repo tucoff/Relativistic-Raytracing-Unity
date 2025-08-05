@@ -6,6 +6,8 @@ public class RayTracedSphere : MonoBehaviour
 {
 	public RayTracingMaterial material;
 
+    public float massa = 1.0f; 
+
 	[SerializeField, HideInInspector] int materialObjectID;
 	[SerializeField, HideInInspector] bool materialInitFlag;
 
