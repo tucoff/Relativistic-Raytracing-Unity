@@ -229,7 +229,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 87724087}
   meshFilter: {fileID: 87724088}
   triangleCount: 358
-  materialObjectID: 30262
+  materialObjectID: 43608
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -2800,7 +2800,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 268864681}
   meshFilter: {fileID: 268864682}
   triangleCount: 358
-  materialObjectID: 30278
+  materialObjectID: 43622
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -5209,7 +5209,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 351128670}
   meshFilter: {fileID: 351128671}
   triangleCount: 358
-  materialObjectID: 30288
+  materialObjectID: 43632
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -7780,7 +7780,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 484108854}
   meshFilter: {fileID: 484108855}
   triangleCount: 358
-  materialObjectID: 30302
+  materialObjectID: 43646
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -10269,7 +10269,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 581354632}
   meshFilter: {fileID: 581354633}
   triangleCount: 358
-  materialObjectID: 30314
+  materialObjectID: 43658
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -12652,88 +12652,6 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!21 &655442877
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Standard
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailAlbedoMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailMask:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailNormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MetallicGlossMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _OcclusionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ParallaxMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _BumpScale: 1
-    - _Cutoff: 0.5
-    - _DetailNormalMapScale: 1
-    - _DstBlend: 0
-    - _GlossMapScale: 1
-    - _Glossiness: 0.5
-    - _GlossyReflections: 1
-    - _Metallic: 0
-    - _Mode: 0
-    - _OcclusionStrength: 1
-    - _Parallax: 0.02
-    - _SmoothnessTextureChannel: 0
-    - _SpecularHighlights: 1
-    - _SrcBlend: 1
-    - _UVSec: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _Color: {r: 5.490566, g: 2.986859, b: 2.3050017, a: 0}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &697686179 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
@@ -12762,7 +12680,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 697686181}
   meshFilter: {fileID: 697686182}
   triangleCount: 358
-  materialObjectID: 30324
+  materialObjectID: 43668
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -15269,7 +15187,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 874897061}
   meshFilter: {fileID: 874897062}
   triangleCount: 2
-  materialObjectID: 30336
+  materialObjectID: 43682
   mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   localChunks:
   - triangles:
@@ -15312,7 +15230,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 928885185}
+  - {fileID: 1060873736}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15357,6 +15275,88 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!21 &888332746
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Standard
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BumpScale: 1
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _UVSec: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 5.490566, g: 2.986859, b: 2.3050017, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &910788153 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: c90e7c58149c9a94caa8bc7ae758c7cf, type: 3}
@@ -15385,7 +15385,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 910788155}
   meshFilter: {fileID: 910788156}
   triangleCount: 456
-  materialObjectID: 30346
+  materialObjectID: 43692
   mesh: {fileID: -8319465574948283117, guid: c90e7c58149c9a94caa8bc7ae758c7cf, type: 3}
   localChunks:
   - triangles:
@@ -18294,88 +18294,6 @@ MeshFilter:
   m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: c90e7c58149c9a94caa8bc7ae758c7cf, type: 3}
   m_PrefabInstance: {fileID: 199367269}
   m_PrefabAsset: {fileID: 0}
---- !u!21 &928885185
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Standard
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailAlbedoMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailMask:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailNormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MetallicGlossMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _OcclusionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ParallaxMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _BumpScale: 1
-    - _Cutoff: 0.5
-    - _DetailNormalMapScale: 1
-    - _DstBlend: 0
-    - _GlossMapScale: 1
-    - _Glossiness: 0.5
-    - _GlossyReflections: 1
-    - _Metallic: 0
-    - _Mode: 0
-    - _OcclusionStrength: 1
-    - _Parallax: 0.02
-    - _SmoothnessTextureChannel: 0
-    - _SpecularHighlights: 1
-    - _SrcBlend: 1
-    - _UVSec: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _Color: {r: 0.071911715, g: 0.087718055, b: 0.1509434, a: 0}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &1010918674 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
@@ -18404,7 +18322,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1010918676}
   meshFilter: {fileID: 1010918677}
   triangleCount: 358
-  materialObjectID: 30356
+  materialObjectID: 43702
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -20787,6 +20705,88 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!21 &1060873736
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Standard
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BumpScale: 1
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _UVSec: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 0.071911715, g: 0.087718055, b: 0.1509434, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!21 &1089908245
 Material:
   serializedVersion: 8
@@ -20987,7 +20987,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1112462502}
   meshFilter: {fileID: 1112462503}
   triangleCount: 582
-  materialObjectID: 30370
+  materialObjectID: 43716
   mesh: {fileID: 4385538395738152230, guid: ea49ebe95bcc41547bf175983e67b1fa, type: 3}
   localChunks:
   - triangles:
@@ -24752,7 +24752,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1207220447}
   meshFilter: {fileID: 1207220448}
   triangleCount: 358
-  materialObjectID: 30380
+  materialObjectID: 43726
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -27081,7 +27081,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1224029269}
   meshFilter: {fileID: 1224029270}
   triangleCount: 358
-  materialObjectID: 30388
+  materialObjectID: 43734
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -29576,24 +29576,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68c390cdf7a860745bbbdeccd7d206a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxBounceCount: 1
-  numRaysPerPixel: 1
-  defocusStrength: 180
-  divergeStrength: 1
   focusDistance: 3.82
-  environmentSettings:
-    enabled: 1
-    groundColour: {r: 0.35, g: 0.3, b: 0.35, a: 0}
-    skyColourHorizon: {r: 1, g: 1, b: 1, a: 0}
-    skyColourZenith: {r: 0.0788092, g: 0.36480793, b: 0.7264151, a: 0}
-    sunFocus: 1000
-    sunIntensity: 0
+  lightDirection: {x: 1, y: 2, z: -1}
+  directionalLightIntensity: 0.5
   showFPS: 1
+  moveSpeed: 5
+  mouseSensitivity: 2
+  enableFirstPersonControls: 1
   rayTracingShader: {fileID: 4800000, guid: 8dfd95b78ab4bca429e13efb430b7acf, type: 3}
-  accumulateShader: {fileID: 4800000, guid: df4a8462c17c09c46a04959859954249, type: 3}
-  numRenderedFrames: 0
   numMeshChunks: 440
   numTriangles: 5912
+  numEmissiveSpheres: 0
 --- !u!20 &1240796227
 Camera:
   m_ObjectHideFlags: 0
@@ -29653,13 +29646,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1240796225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.010733527, y: 0.0015009372, z: -0.000016111295, w: 0.9999413}
-  m_LocalPosition: {x: 0.44502136, y: 0.93, z: -5.36}
+  m_LocalRotation: {x: 0.1393976, y: 0.71786594, z: -0.13359433, w: 0.66887176}
+  m_LocalPosition: {x: -6.84, y: 3.21, z: -0.07}
   m_LocalScale: {x: 1.0000004, y: 1, z: 1.0000004}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 1.23, y: 0.172, z: 0}
+  m_LocalEulerAnglesHint: {x: 22.227, y: 94.307, z: 1.326}
 --- !u!1 &1294790984
 GameObject:
   m_ObjectHideFlags: 0
@@ -29785,7 +29778,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1322173624}
   meshFilter: {fileID: 1322173625}
   triangleCount: 358
-  materialObjectID: 30414
+  materialObjectID: 43760
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -32368,7 +32361,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1508190823}
   meshFilter: {fileID: 1508190824}
   triangleCount: 466
-  materialObjectID: 30428
+  materialObjectID: 43774
   mesh: {fileID: -4175726406976504967, guid: 05768a7c4a0e4cb488ffa6d1e8a585bf, type: 3}
   localChunks:
   - triangles:
@@ -35442,7 +35435,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1673414949}
   meshFilter: {fileID: 1673414950}
   triangleCount: 466
-  materialObjectID: 30438
+  materialObjectID: 43784
   mesh: {fileID: -4175726406976504967, guid: 05768a7c4a0e4cb488ffa6d1e8a585bf, type: 3}
   localChunks:
   - triangles:
@@ -38688,7 +38681,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 1849930674}
   meshFilter: {fileID: 1849930675}
   triangleCount: 358
-  materialObjectID: 30452
+  materialObjectID: 43798
   mesh: {fileID: 1705324974331375986, guid: cf4d3acd65c6b4940b7b2a4cb9811c8f, type: 3}
   localChunks:
   - triangles:
@@ -41249,7 +41242,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2056708443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41273,7 +41266,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 2056708444}
   meshFilter: {fileID: 2056708445}
   triangleCount: 2
-  materialObjectID: 30466
+  materialObjectID: 43812
   mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   localChunks:
   - triangles:
@@ -41316,7 +41309,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 655442877}
+  - {fileID: 888332746}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

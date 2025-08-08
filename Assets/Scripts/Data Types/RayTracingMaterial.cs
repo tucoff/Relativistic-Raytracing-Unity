@@ -22,9 +22,10 @@ public struct RayTracingMaterial
 	{
 		colour = Color.white;
 		emissionColour = Color.white;
-		emissionStrength = 0;
+		emissionStrength = 0f;
 		specularColour = Color.white;
 		smoothness = 0;
 		specularProbability = 1;
 	}
+
 }
