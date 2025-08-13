@@ -90,6 +90,8 @@ Shader "Custom/RayTracing"
             float _HyperbolicCurvature;
             int _UseHyperbolicView;
 
+            const float G = 6.67430e-11;
+
             // --- Funções de Interseção de Raio ---
 
             // Função para aplicar curvatura hiperbólica ao raio
