@@ -4,7 +4,8 @@ using System.Collections.Generic;
 public class CurvedLineGenerator : MonoBehaviour
 {
     private LineRenderer lineRenderer;
-    [Range(2, 100)]
+
+    [Range(2, 1000)]
     public int numPoints = 200;
     public float curveStrength = 1.0f;
     public float lineLength = 100.0f;
@@ -47,7 +48,9 @@ public class CurvedLineGenerator : MonoBehaviour
         lineRenderer.positionCount = numPoints;
 
         Vector3 currentPosition = targetCameraTransform.position;
-        Vector3 currentDirection = useCustomDirection ? customDirection.normalized : targetCameraTransform.forward;
+        Vector3 currentDirection = useCustomDirection ? 
+            (targetCameraTransform.rotation * customDirection).normalized : 
+            targetCameraTransform.forward;
         
         points[0] = currentPosition;
 

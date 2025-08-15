@@ -12,9 +12,10 @@ public class RayTracingManager : MonoBehaviour
     [SerializeField] Vector3 lightDirection = new Vector3(1, -1, -1);
     [SerializeField, Range(0f, 2f)] float directionalLightIntensity = 0.5f;
     
-    [Header("Hyperbolic View Settings")]
-    [SerializeField] bool useHyperbolicView = false;
-    [SerializeField, Range(0f, 5f)] float hyperbolicCurvature = 1f;
+    [Header("Relativistic View Settings")]
+    [SerializeField] bool useRelativisticView = false;
+    [SerializeField, Range(0f, 1f)] float stepSize = 0.1f;
+    [SerializeField, Range(10, 1000)] int maxSteps = 100;
 
     [Header("View Settings")]
     [SerializeField] bool showFPS = true;
@@ -90,23 +91,10 @@ public class RayTracingManager : MonoBehaviour
             HandleFirstPersonControls();
         }
 
-        // Atalhos para visão hiperbólica
+        // Atalhos para visão relativística
         if (Input.GetKeyDown(KeyCode.H))
         {
-            ToggleHyperbolicView();
-        }
-        
-        if (useHyperbolicView)
-        {
-            // Ajustar curvatura com as teclas + e -
-            if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus))
-            {
-                hyperbolicCurvature = Mathf.Min(hyperbolicCurvature + Time.deltaTime * 1.5f, 5f);
-            }
-            if (Input.GetKey(KeyCode.Minus))
-            {
-                hyperbolicCurvature = Mathf.Max(hyperbolicCurvature - Time.deltaTime * 1.5f, 0f);
-            }
+            ToggleRelativisticView();
         }
     }
 
@@ -180,13 +168,13 @@ public class RayTracingManager : MonoBehaviour
                 GUI.Label(rect, controlsText, style);
             }
 
-            // Mostrar status da visão hiperbólica
+            // Mostrar status da visão relativística
             rect.y += 25;
-            style.normal.textColor = useHyperbolicView ? Color.cyan : Color.gray;
-            string hyperbolicText = useHyperbolicView ? 
-                $"Hyperbolic View: ON | Curvature: {hyperbolicCurvature:F2} | H: Toggle | +/-: Adjust" : 
-                "Hyperbolic View: OFF | Press H to enable";
-            GUI.Label(rect, hyperbolicText, style);
+            style.normal.textColor = useRelativisticView ? Color.cyan : Color.gray;
+            string relativisticText = useRelativisticView ? 
+                $"Relativistic View: ON | Press H to disable" : 
+                "Relativistic View: OFF | Press H to enable";
+            GUI.Label(rect, relativisticText, style);
         }
     }
 
@@ -224,8 +212,9 @@ public class RayTracingManager : MonoBehaviour
     {
         rayTracingMaterial.SetVector("_LightDirection", lightDirection.normalized);
         rayTracingMaterial.SetFloat("_DirectionalLightIntensity", directionalLightIntensity);
-        rayTracingMaterial.SetFloat("_HyperbolicCurvature", hyperbolicCurvature);
-        rayTracingMaterial.SetInt("_UseHyperbolicView", useHyperbolicView ? 1 : 0);
+        rayTracingMaterial.SetInt("_UseHyperbolicView", useRelativisticView ? 1 : 0);
+        rayTracingMaterial.SetFloat("_StepSize", stepSize);
+        rayTracingMaterial.SetInt("_MaxSteps", maxSteps);
     }
 
     void UpdateCameraParams(Camera cam)
@@ -303,48 +292,30 @@ public class RayTracingManager : MonoBehaviour
     // --- Métodos Públicos ---
 
     /// <summary>
-    /// Alterna a visão hiperbólica
+    /// Alterna a visão relativística
     /// </summary>
-    public void ToggleHyperbolicView()
+    public void ToggleRelativisticView()
     {
-        useHyperbolicView = !useHyperbolicView;
-        Debug.Log($"Hyperbolic View: {(useHyperbolicView ? "ENABLED" : "DISABLED")}");
+        useRelativisticView = !useRelativisticView;
+        Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
 
     /// <summary>
-    /// Define se a visão hiperbólica está ativa
+    /// Define se a visão relativística está ativa
     /// </summary>
     /// <param name="enabled">True para ativar, false para desativar</param>
-    public void SetHyperbolicView(bool enabled)
+    public void SetRelativisticView(bool enabled)
     {
-        useHyperbolicView = enabled;
-        Debug.Log($"Hyperbolic View: {(useHyperbolicView ? "ENABLED" : "DISABLED")}");
+        useRelativisticView = enabled;
+        Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
 
     /// <summary>
-    /// Define a curvatura hiperbólica
+    /// Retorna se a visão relativística está ativa
     /// </summary>
-    /// <param name="curvature">Valor da curvatura (0-5)</param>
-    public void SetHyperbolicCurvature(float curvature)
+    public bool IsRelativisticViewEnabled()
     {
-        hyperbolicCurvature = Mathf.Clamp(curvature, 0f, 5f);
-        Debug.Log($"Hyperbolic Curvature: {hyperbolicCurvature:F2}");
-    }
-
-    /// <summary>
-    /// Retorna se a visão hiperbólica está ativa
-    /// </summary>
-    public bool IsHyperbolicViewEnabled()
-    {
-        return useHyperbolicView;
-    }
-
-    /// <summary>
-    /// Retorna o valor atual da curvatura
-    /// </summary>
-    public float GetHyperbolicCurvature()
-    {
-        return hyperbolicCurvature;
+        return useRelativisticView;
     }
 
     void OnValidate()
