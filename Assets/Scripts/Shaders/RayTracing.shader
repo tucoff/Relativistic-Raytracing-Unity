@@ -187,20 +187,13 @@ Shader "Custom/RayTracingRelativistic"
                 Ray curvedRay;
                 curvedRay.origin = _WorldSpaceCameraPos;
                 curvedRay.dir = initialRayDir;
+                float totalDistanceTraveled = 0.0;
 
                 for (int step = 0; step < _MaxSteps; step++)
                 {
-                    // Verificar colisão antes de aplicar deflexão
-                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
-                    if (hitInfo.didHit)
-                    {
-                        // Corrigir a distância do hit para a distância percorrida
-                        hitInfo.dst = step * _StepSize + hitInfo.dst;
-                        return hitInfo;
-                    }
-                    
+                    // Primeiro, aplicar deflexão gravitacional
                     float3 totalDeflection = float3(0, 0, 0);
-                    
+                        
                     for (int i = 0; i < NumSpheres; i++)
                     {
                         Sphere sphere = Spheres[i];
@@ -218,9 +211,6 @@ Shader "Custom/RayTracingRelativistic"
                         // Usa uma força inversamente proporcional ao quadrado da distância
                         float deflectionStrength = G * sphere.massa / (distance * distance);
                         
-                        // Limitar a força máxima para evitar deflexões extremas
-                        deflectionStrength = min(deflectionStrength, 10.0);
-                        
                         // A deflexão é na direção da esfera (fisicamente correto)
                         totalDeflection += direction * deflectionStrength;
                     }
@@ -232,13 +222,22 @@ Shader "Custom/RayTracingRelativistic"
                         float deflectionMagnitude = length(totalDeflection);
                         float3 deflectionDir = totalDeflection / deflectionMagnitude;
                         
-                        // Aplicar uma deflexão suave proporcional ao step size
-                        float smoothDeflection = min(deflectionMagnitude * _StepSize * 0.1, 0.5);
+                        float smoothDeflection = deflectionMagnitude * _StepSize;
                         curvedRay.dir = normalize(curvedRay.dir + deflectionDir * smoothDeflection);
                     }
                     
                     // Avançar o raio
                     curvedRay.origin += curvedRay.dir * _StepSize;
+                    totalDistanceTraveled += _StepSize;
+                    
+                    // DEPOIS de aplicar a deflexão, verificar colisão
+                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
+                    if (hitInfo.didHit)
+                    {
+                        // Adicionar a distância já percorrida nos passos anteriores
+                        hitInfo.dst = totalDistanceTraveled + hitInfo.dst;
+                        return hitInfo;
+                    }
                 }
                 
                 HitInfo missInfo;
@@ -312,11 +311,18 @@ Shader "Custom/RayTracingRelativistic"
 
             float4 frag (v2f i) : SV_Target
             {
-                // Calcular direção do raio inicial
                 float3 focusPointLocal = float3(i.uv - 0.5, 1) * ViewParams;
                 float3 focusPoint = mul(CamLocalToWorldMatrix, float4(focusPointLocal, 1));
                 float3 initialRayDir = normalize(focusPoint - _WorldSpaceCameraPos);
                                 
+                //float2 center = float2(0.5, 0.5);
+                //float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                
+                //if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
+                //{
+                //    return float4(0,0,0,1); 
+                //}
+
                 // Aplicar curvatura exagerada
                 HitInfo hitInfo = ApplyHyperbolicCurvatureExaggerated(initialRayDir, i.uv);
 
@@ -340,6 +346,7 @@ Shader "Custom/RayTracingRelativistic"
                     float3 skyColor = lerp(float3(0.05, 0.1, 0.2), float3(0.1, 0.3, 0.6), skyGradient);
                     return float4(skyColor, 1.0);
                 }
+
             }
             ENDCG
         }

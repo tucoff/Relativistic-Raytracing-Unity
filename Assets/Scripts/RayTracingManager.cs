@@ -318,6 +318,22 @@ public class RayTracingManager : MonoBehaviour
         return useRelativisticView;
     }
 
+    /// <summary>
+    /// Retorna o step size atual usado na visão relativística
+    /// </summary>
+    public float GetStepSize()
+    {
+        return stepSize;
+    }
+
+    /// <summary>
+    /// Retorna o número máximo de passos usado na visão relativística
+    /// </summary>
+    public int GetMaxSteps()
+    {
+        return maxSteps;
+    }
+
     void OnValidate()
     {
         // ... (removido para manter o código conciso)
