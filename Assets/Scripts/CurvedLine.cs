@@ -49,6 +49,7 @@ public class CurvedLineGenerator : MonoBehaviour
 
     Vector3 CalculateGravitationalDeflection(Vector3 rayPosition, float stepSize)
     {
+
         // TOTAL = (0,0,0)
         Vector3 totalDeflection = Vector3.zero;
         
@@ -109,6 +110,14 @@ public class CurvedLineGenerator : MonoBehaviour
         // ITERATE FOR EACH POINT / STEP
         for (int i = 1; i < numPoints; i++)
         {
+            RaycastHit hit;
+        
+            if (Physics.Raycast(currentPosition, currentDirection, out hit, stepSize))
+            {
+                points[i] = hit.point;
+                break; 
+            }
+
             Vector3 gravitationalDeflection = CalculateGravitationalDeflection(currentPosition, stepSize);
 
             // ADD TOTAL TO LAST DIR AND NORMALIZE
