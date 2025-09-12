@@ -14,8 +14,8 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField] float stepSize = 0.1f;
-    [SerializeField] int maxSteps = 100;
+    [SerializeField, Min(0)] float stepSize;
+    [SerializeField, Min(1)] int maxSteps;
 
     [Header("View Settings")]
     [SerializeField] bool showFPS = true;
@@ -318,8 +318,4 @@ public class RayTracingManager : MonoBehaviour
         return maxSteps;
     }
 
-    void OnValidate()
-    {
-        // ... (removido para manter o código conciso)
-    }
 }

@@ -172,6 +172,72 @@ Shader "Custom/RayTracingRelativistic"
                 return closestHit;
             }
 
+            HitInfo ApplyRelativisticEffects(float3 initialRayDir)
+            {
+                if (_UseHyperbolicView == 0) 
+                {
+                    Ray straightRay;
+                    straightRay.origin = _WorldSpaceCameraPos;
+                    straightRay.dir = initialRayDir;
+                    return CalculateRayCollision(straightRay);
+                }
+                
+                Ray curvedRay;
+                // START POINT ON CAMERA POSITION
+                curvedRay.origin = _WorldSpaceCameraPos;
+                // START VECTOR ON CAMERA LOOK DIRECTION
+                curvedRay.dir = initialRayDir;
+
+                // ITERATE FOR EACH POINT / STEP
+                for (int step = 0; step < _MaxSteps; step++)
+                {
+                    // TOTAL = (0,0,0)
+                    float3 totalDeflection = float3(0, 0, 0);
+
+                    // FOR EACH SPHERE 
+                    for (int i = 0; i < NumSpheres; i++)
+                    {
+                        Sphere sphere = Spheres[i];
+                        if (sphere.massa <= 0) continue;
+                        
+                        float3 toSphere = sphere.position - curvedRay.origin;
+                       
+                        // DST
+                        float distance = length(toSphere);
+                        
+                        if (distance < 0.1) continue;
+                        
+                        // DIR
+                        float3 direction = toSphere / distance;
+                        
+                        // DEF (by newtons)
+                        float deflectionStrength = G * sphere.massa / (distance * distance);
+                        
+                        // TOTAL += DIR * DEF
+                        totalDeflection += direction * deflectionStrength;
+                    }
+                    
+                    if (length(totalDeflection) > 0)
+                    {
+                        // ADD TOTAL TO LAST DIR AND NORMALIZE
+                        curvedRay.dir = normalize(curvedRay.dir + totalDeflection * _StepSize);
+                    }
+                    
+                    // MOVE CURRENT POSITION
+                    curvedRay.origin += curvedRay.dir * _StepSize;
+
+                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
+                    if (hitInfo.didHit)
+                    {
+                        return hitInfo;
+                    }
+                }
+                
+                HitInfo missInfo;
+                missInfo.didHit = false;
+                return missInfo;
+            }
+
             // --- Iluminação Global ---
             float3 CalculateDirectLighting(HitInfo hitInfo, float3 viewDir)
             {
@@ -236,79 +302,18 @@ Shader "Custom/RayTracingRelativistic"
                 return o;
             }
 
-            HitInfo ApplyRelativisticEffects(float3 initialRayDir)
-            {
-                if (_UseHyperbolicView == 0) 
-                {
-                    Ray straightRay;
-                    straightRay.origin = _WorldSpaceCameraPos;
-                    straightRay.dir = initialRayDir;
-                    return CalculateRayCollision(straightRay);
-                }
-                
-                Ray curvedRay;
-                curvedRay.origin = _WorldSpaceCameraPos;
-                curvedRay.dir = initialRayDir;
-
-                for (int step = 0; step < _MaxSteps; step++)
-                {
-                    // Primeiro, aplicar deflexão gravitacional
-                    float3 totalDeflection = float3(0, 0, 0);
-                        
-                    for (int i = 0; i < NumSpheres; i++)
-                    {
-                        Sphere sphere = Spheres[i];
-                        if (sphere.massa <= 0) continue;
-                        
-                        float3 toSphere = sphere.position - curvedRay.origin;
-                        float distance = length(toSphere);
-                        
-                        // Evitar divisão por zero ou valores muito pequenos
-                        if (distance < 0.1) continue;
-                        
-                        float3 direction = toSphere / distance;
-                        
-                        // Fórmula gravitacional estabilizada
-                        // Usa uma força inversamente proporcional ao quadrado da distância
-                        float deflectionStrength = G * sphere.massa / (distance * distance);
-                        
-                        // A deflexão é na direção da esfera (fisicamente correto)
-                        totalDeflection += direction * deflectionStrength;
-                    }
-                    
-                    if (length(totalDeflection) > 0)
-                    {
-                        curvedRay.dir = normalize(curvedRay.dir + totalDeflection * _StepSize);
-                    }
-                    
-                    // Avançar o raio
-                    curvedRay.origin += curvedRay.dir * _StepSize;
-                    
-                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
-                    if (hitInfo.didHit)
-                    {
-                        return hitInfo;
-                    }
-                }
-                
-                HitInfo missInfo;
-                missInfo.didHit = false;
-                return missInfo;
-            }
-
             float4 frag (v2f i) : SV_Target
             {
                 float3 focusPointLocal = float3(i.uv - 0.5, 1) * ViewParams;
                 float3 focusPoint = mul(CamLocalToWorldMatrix, float4(focusPointLocal, 1));
                 float3 initialRayDir = normalize(focusPoint - _WorldSpaceCameraPos);
 
-                // // Renderizar apenas o pixel central para testes de similaridade              
+                // // RENDER ONLY CENTER PIXEL
                 // float2 center = float2(0.5, 0.5);
                 // float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
                 // if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
                 // { return float4(0,0,0,1); }
 
-                // Aplicar efeitos relativísticos
                 HitInfo hitInfo = ApplyRelativisticEffects(initialRayDir);
 
                 if (hitInfo.didHit)
@@ -326,7 +331,6 @@ Shader "Custom/RayTracingRelativistic"
                 }
                 else
                 {
-                    // Fundo com gradiente
                     float skyGradient = smoothstep(-0.5, 0.5, initialRayDir.y);
                     float3 skyColor = lerp(float3(0.05, 0.1, 0.2), float3(0.1, 0.3, 0.6), skyGradient);
                     return float4(skyColor, 1.0);

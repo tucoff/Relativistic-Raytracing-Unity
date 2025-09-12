@@ -5,21 +5,9 @@ public class CurvedLineGenerator : MonoBehaviour
 {
     private LineRenderer lineRenderer;
     private RayTracingManager rayTracingManager;
-
-    // Parameters now calculated from RayTracingManager instead of Unity interface
-    private int numPoints = 200;
-    private float lineLength = 100.0f;
-    
-    public float curveStrength = 1.0f;
-
-    [Header("Gravitational Settings")]
-    public float gravitationalConstant = 6.67430f; //* Mathf.Pow(10, -11);
-
-    [Header("Directional Settings")]
-    public Transform targetCameraTransform; // A câmera 1 que dita a origem e direção
-    public bool useCustomDirection = false;
-    public Vector3 customDirection = Vector3.forward;
-    
+    private int numPoints;
+    public float gravitationalConstant = 6.67430f; 
+    public Transform targetCameraTransform; 
     private RayTracedSphere[] massiveSpheres;
 
     void Awake()
@@ -55,34 +43,38 @@ public class CurvedLineGenerator : MonoBehaviour
         float newStepSize = rayTracingManager.GetStepSize();
         
         numPoints = newMaxSteps;
-        lineLength = newStepSize * newMaxSteps; 
         
         numPoints = Mathf.Max(2, numPoints);
-        lineLength = Mathf.Max(0.1f, lineLength);
     }
 
     Vector3 CalculateGravitationalDeflection(Vector3 rayPosition, float stepSize)
     {
+        // TOTAL = (0,0,0)
         Vector3 totalDeflection = Vector3.zero;
         
         if (massiveSpheres == null) return totalDeflection;
         
+        // FOR EACH SPHERE
         foreach (RayTracedSphere sphere in massiveSpheres)
         {
             if (sphere == null || sphere.massa <= 0) continue;
-            
+
             Vector3 spherePos = sphere.transform.position;
-            
+
             Vector3 toSphere = spherePos - rayPosition;
 
+            // DST 
             float distance = toSphere.magnitude;
-            
+
             if (distance < 0.1f) continue;
-            
+
+            // DIR
             Vector3 direction = toSphere / distance;
-            
+
+            // DEF (by newtons)
             float deflectionStrength = gravitationalConstant * sphere.massa / (distance * distance);
-            
+
+            // TOTAL += DIR * DEF
             totalDeflection += direction * deflectionStrength;
         }
         
@@ -104,23 +96,26 @@ public class CurvedLineGenerator : MonoBehaviour
         Vector3[] points = new Vector3[numPoints];
         lineRenderer.positionCount = numPoints;
 
+        // START POINT ON CAMERA POSITION
         Vector3 currentPosition = targetCameraTransform.position;
-        Vector3 currentDirection = useCustomDirection ? 
-            (targetCameraTransform.rotation * customDirection).normalized : 
-            targetCameraTransform.forward;
+        // START VECTOR ON CAMERA LOOK DIRECTION
+        Vector3 currentDirection = targetCameraTransform.forward;
         
         points[0] = currentPosition;
 
+        // STEP SIZE 
         float stepSize = rayTracingManager.GetStepSize(); // Use exact same stepSize as shader
 
+        // ITERATE FOR EACH POINT / STEP
         for (int i = 1; i < numPoints; i++)
         {
             Vector3 gravitationalDeflection = CalculateGravitationalDeflection(currentPosition, stepSize);
-            
-            currentDirection += gravitationalDeflection;
 
-            currentDirection.Normalize();
-            
+            // ADD TOTAL TO LAST DIR AND NORMALIZE
+            currentDirection += gravitationalDeflection;
+            currentDirection = currentDirection.normalized;
+
+            // MOVE CURRENT POSITION
             currentPosition += currentDirection * stepSize;
 
             points[i] = currentPosition;
