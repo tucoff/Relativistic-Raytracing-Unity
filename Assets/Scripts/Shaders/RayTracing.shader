@@ -89,8 +89,7 @@ Shader "Custom/RayTracingRelativistic"
             float _StepSize;
             int _MaxSteps;
 
-            // Constante gravitacional exagerada para efeitos visíveis
-            #define G 1000000.0
+            #define G 6.67430f
 
             // --- Funções de Interseção de Raio ---
             HitInfo RaySphere(Ray ray, float3 sphereCentre, float sphereRadius)
@@ -173,78 +172,6 @@ Shader "Custom/RayTracingRelativistic"
                 return closestHit;
             }
 
-            // Função de curvatura hiperbólica estabilizada
-            HitInfo ApplyHyperbolicCurvatureExaggerated(float3 initialRayDir, float2 screenPos)
-            {
-                if (_UseHyperbolicView == 0) 
-                {
-                    Ray straightRay;
-                    straightRay.origin = _WorldSpaceCameraPos;
-                    straightRay.dir = initialRayDir;
-                    return CalculateRayCollision(straightRay);
-                }
-                
-                Ray curvedRay;
-                curvedRay.origin = _WorldSpaceCameraPos;
-                curvedRay.dir = initialRayDir;
-                float totalDistanceTraveled = 0.0;
-
-                for (int step = 0; step < _MaxSteps; step++)
-                {
-                    // Primeiro, aplicar deflexão gravitacional
-                    float3 totalDeflection = float3(0, 0, 0);
-                        
-                    for (int i = 0; i < NumSpheres; i++)
-                    {
-                        Sphere sphere = Spheres[i];
-                        if (sphere.massa <= 0) continue;
-                        
-                        float3 toSphere = sphere.position - curvedRay.origin;
-                        float distance = length(toSphere);
-                        
-                        // Evitar divisão por zero ou valores muito pequenos
-                        if (distance < 0.1) continue;
-                        
-                        float3 direction = toSphere / distance;
-                        
-                        // Fórmula gravitacional estabilizada
-                        // Usa uma força inversamente proporcional ao quadrado da distância
-                        float deflectionStrength = G * sphere.massa / (distance * distance);
-                        
-                        // A deflexão é na direção da esfera (fisicamente correto)
-                        totalDeflection += direction * deflectionStrength;
-                    }
-                    
-                    // Aplicar deflexão de forma suave
-                    if (length(totalDeflection) > 0)
-                    {
-                        // Normalizar a deflexão total para evitar mudanças bruscas
-                        float deflectionMagnitude = length(totalDeflection);
-                        float3 deflectionDir = totalDeflection / deflectionMagnitude;
-                        
-                        float smoothDeflection = deflectionMagnitude * _StepSize;
-                        curvedRay.dir = normalize(curvedRay.dir + deflectionDir * smoothDeflection);
-                    }
-                    
-                    // Avançar o raio
-                    curvedRay.origin += curvedRay.dir * _StepSize;
-                    totalDistanceTraveled += _StepSize;
-                    
-                    // DEPOIS de aplicar a deflexão, verificar colisão
-                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
-                    if (hitInfo.didHit)
-                    {
-                        // Adicionar a distância já percorrida nos passos anteriores
-                        hitInfo.dst = totalDistanceTraveled + hitInfo.dst;
-                        return hitInfo;
-                    }
-                }
-                
-                HitInfo missInfo;
-                missInfo.didHit = false;
-                return missInfo;
-            }
-
             // --- Iluminação Global ---
             float3 CalculateDirectLighting(HitInfo hitInfo, float3 viewDir)
             {
@@ -309,22 +236,80 @@ Shader "Custom/RayTracingRelativistic"
                 return o;
             }
 
+            HitInfo ApplyRelativisticEffects(float3 initialRayDir)
+            {
+                if (_UseHyperbolicView == 0) 
+                {
+                    Ray straightRay;
+                    straightRay.origin = _WorldSpaceCameraPos;
+                    straightRay.dir = initialRayDir;
+                    return CalculateRayCollision(straightRay);
+                }
+                
+                Ray curvedRay;
+                curvedRay.origin = _WorldSpaceCameraPos;
+                curvedRay.dir = initialRayDir;
+
+                for (int step = 0; step < _MaxSteps; step++)
+                {
+                    // Primeiro, aplicar deflexão gravitacional
+                    float3 totalDeflection = float3(0, 0, 0);
+                        
+                    for (int i = 0; i < NumSpheres; i++)
+                    {
+                        Sphere sphere = Spheres[i];
+                        if (sphere.massa <= 0) continue;
+                        
+                        float3 toSphere = sphere.position - curvedRay.origin;
+                        float distance = length(toSphere);
+                        
+                        // Evitar divisão por zero ou valores muito pequenos
+                        if (distance < 0.1) continue;
+                        
+                        float3 direction = toSphere / distance;
+                        
+                        // Fórmula gravitacional estabilizada
+                        // Usa uma força inversamente proporcional ao quadrado da distância
+                        float deflectionStrength = G * sphere.massa / (distance * distance);
+                        
+                        // A deflexão é na direção da esfera (fisicamente correto)
+                        totalDeflection += direction * deflectionStrength;
+                    }
+                    
+                    if (length(totalDeflection) > 0)
+                    {
+                        curvedRay.dir = normalize(curvedRay.dir + totalDeflection * _StepSize);
+                    }
+                    
+                    // Avançar o raio
+                    curvedRay.origin += curvedRay.dir * _StepSize;
+                    
+                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
+                    if (hitInfo.didHit)
+                    {
+                        return hitInfo;
+                    }
+                }
+                
+                HitInfo missInfo;
+                missInfo.didHit = false;
+                return missInfo;
+            }
+
             float4 frag (v2f i) : SV_Target
             {
                 float3 focusPointLocal = float3(i.uv - 0.5, 1) * ViewParams;
                 float3 focusPoint = mul(CamLocalToWorldMatrix, float4(focusPointLocal, 1));
                 float3 initialRayDir = normalize(focusPoint - _WorldSpaceCameraPos);
-                                
-                //float2 center = float2(0.5, 0.5);
-                //float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
-                
-                //if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
-                //{
-                //    return float4(0,0,0,1); 
-                //}
 
-                // Aplicar curvatura exagerada
-                HitInfo hitInfo = ApplyHyperbolicCurvatureExaggerated(initialRayDir, i.uv);
+                // // Renderizar apenas o pixel central para testes de similaridade              
+                // float2 center = float2(0.5, 0.5);
+                // float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                // if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
+                // { return float4(0,0,0,1); }
+
+                // Aplicar efeitos relativísticos
+                HitInfo hitInfo = ApplyRelativisticEffects(initialRayDir);
 
                 if (hitInfo.didHit)
                 {

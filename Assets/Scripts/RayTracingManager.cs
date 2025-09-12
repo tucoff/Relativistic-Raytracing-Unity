@@ -14,8 +14,8 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField, Range(0f, 1f)] float stepSize = 0.1f;
-    [SerializeField, Range(10, 1000)] int maxSteps = 100;
+    [SerializeField] float stepSize = 0.1f;
+    [SerializeField] int maxSteps = 100;
 
     [Header("View Settings")]
     [SerializeField] bool showFPS = true;
@@ -291,44 +291,28 @@ public class RayTracingManager : MonoBehaviour
 
     // --- Métodos Públicos ---
 
-    /// <summary>
-    /// Alterna a visão relativística
-    /// </summary>
     public void ToggleRelativisticView()
     {
         useRelativisticView = !useRelativisticView;
         Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
 
-    /// <summary>
-    /// Define se a visão relativística está ativa
-    /// </summary>
-    /// <param name="enabled">True para ativar, false para desativar</param>
     public void SetRelativisticView(bool enabled)
     {
         useRelativisticView = enabled;
         Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
 
-    /// <summary>
-    /// Retorna se a visão relativística está ativa
-    /// </summary>
     public bool IsRelativisticViewEnabled()
     {
         return useRelativisticView;
     }
 
-    /// <summary>
-    /// Retorna o step size atual usado na visão relativística
-    /// </summary>
     public float GetStepSize()
     {
         return stepSize;
     }
 
-    /// <summary>
-    /// Retorna o número máximo de passos usado na visão relativística
-    /// </summary>
     public int GetMaxSteps()
     {
         return maxSteps;
