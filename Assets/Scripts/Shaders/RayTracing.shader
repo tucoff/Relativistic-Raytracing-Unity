@@ -86,6 +86,7 @@ Shader "Custom/RayTracingRelativistic"
             float3 _LightDirection;
             float _DirectionalLightIntensity;
             int _UseHyperbolicView;
+            int _UsePointMode;
             float _StepSize;
             int _MaxSteps;
 
@@ -309,11 +310,14 @@ Shader "Custom/RayTracingRelativistic"
                 float3 focusPoint = mul(CamLocalToWorldMatrix, float4(focusPointLocal, 1));
                 float3 initialRayDir = normalize(focusPoint - _WorldSpaceCameraPos);
 
-                // RENDER ONLY CENTER PIXEL
-                float2 center = float2(0.5, 0.5);
-                float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
-                if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
-                { return float4(0,0,0,1); }
+                // POINT MODE - RENDER ONLY CENTER PIXEL
+                if (_UsePointMode == 1)
+                {
+                    float2 center = float2(0.5, 0.5);
+                    float2 pixelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                    if (abs(i.uv.x - center.x) > pixelSize.x || abs(i.uv.y - center.y) > pixelSize.y)
+                    { return float4(0,0,0,1); }
+                }
 
                 HitInfo hitInfo = ApplyRelativisticEffects(initialRayDir);
 

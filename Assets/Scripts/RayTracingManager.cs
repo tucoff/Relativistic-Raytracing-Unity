@@ -16,6 +16,9 @@ public class RayTracingManager : MonoBehaviour
     [SerializeField] bool useRelativisticView = false;
     [SerializeField, Min(0)] float stepSize;
     [SerializeField, Min(1)] int maxSteps;
+    
+    [Header("Point Mode Settings")]
+    [SerializeField] bool usePointMode = false;
 
     [Header("View Settings")]
     [SerializeField] bool showFPS = true;
@@ -96,6 +99,12 @@ public class RayTracingManager : MonoBehaviour
         {
             ToggleRelativisticView();
         }
+        
+        // Atalho para modo ponto
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            TogglePointMode();
+        }
     }
 
     void HandleFirstPersonControls()
@@ -175,6 +184,14 @@ public class RayTracingManager : MonoBehaviour
                 $"Relativistic View: ON | Press H to disable" : 
                 "Relativistic View: OFF | Press H to enable";
             GUI.Label(rect, relativisticText, style);
+            
+            // Mostrar status do modo ponto
+            rect.y += 25;
+            style.normal.textColor = usePointMode ? Color.yellow : Color.gray;
+            string pointModeText = usePointMode ? 
+                "Point Mode: ON | Press P to disable" : 
+                "Point Mode: OFF | Press P to enable";
+            GUI.Label(rect, pointModeText, style);
         }
     }
 
@@ -213,6 +230,7 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetVector("_LightDirection", lightDirection.normalized);
         rayTracingMaterial.SetFloat("_DirectionalLightIntensity", directionalLightIntensity);
         rayTracingMaterial.SetInt("_UseHyperbolicView", useRelativisticView ? 1 : 0);
+        rayTracingMaterial.SetInt("_UsePointMode", usePointMode ? 1 : 0);
         rayTracingMaterial.SetFloat("_StepSize", stepSize);
         rayTracingMaterial.SetInt("_MaxSteps", maxSteps);
     }
@@ -296,16 +314,33 @@ public class RayTracingManager : MonoBehaviour
         useRelativisticView = !useRelativisticView;
         Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
+    
+    public void TogglePointMode()
+    {
+        usePointMode = !usePointMode;
+        Debug.Log($"Point Mode: {(usePointMode ? "ENABLED" : "DISABLED")}");
+    }
 
     public void SetRelativisticView(bool enabled)
     {
         useRelativisticView = enabled;
         Debug.Log($"Relativistic View: {(useRelativisticView ? "ENABLED" : "DISABLED")}");
     }
+    
+    public void SetPointMode(bool enabled)
+    {
+        usePointMode = enabled;
+        Debug.Log($"Point Mode: {(usePointMode ? "ENABLED" : "DISABLED")}");
+    }
 
     public bool IsRelativisticViewEnabled()
     {
         return useRelativisticView;
+    }
+    
+    public bool IsPointModeEnabled()
+    {
+        return usePointMode;
     }
 
     public float GetStepSize()
