@@ -14,8 +14,8 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField, Min(0)] float stepSize;
-    [SerializeField, Min(1)] int maxSteps;
+    [SerializeField, Min(0)] float stepSize = 0.1f;
+    [SerializeField, Min(1)] int maxSteps = 100;
     
     [Header("Point Mode Settings")]
     [SerializeField] bool usePointMode = false;
@@ -30,7 +30,14 @@ public class RayTracingManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] Shader rayTracingShader;
-
+    
+    [Header("Compute Solver Settings")]
+    [SerializeField] ComputeShader geodesicSolver;
+    [SerializeField, Min(16)] int gridResolution = 32;
+    [SerializeField, Min(1)] int solverIterations = 1000;
+    [SerializeField] Vector3 gridCenter = Vector3.zero;
+    [SerializeField] float gridSize = 100f;
+    
     [Header("Info")]
     [SerializeField] int numMeshChunks;
     [SerializeField] int numTriangles;
@@ -49,13 +56,29 @@ public class RayTracingManager : MonoBehaviour
     private float yRotation = 0f;
     private bool cursorLocked = false;
 
-    // Materials and render textures
+    // --- Buffers ---
     Material rayTracingMaterial;
-
-    // Buffers
     ComputeBuffer sphereBuffer;
     ComputeBuffer triangleBuffer;
     ComputeBuffer meshInfoBuffer;
+    
+    // --- NOVOS BUFFERS/TEXTURAS (Abordagem 3) ---
+    // Precisamos de 10 componentes para g_μν
+    // (g_tt, g_xx, g_yy, g_zz, g_tx, g_ty, g_tz, g_xy, g_xz, g_yz)
+    // Agrupamos em 3 texturas float4:
+    // A = (g_tt, g_xx, g_yy, g_zz)
+    // B = (g_tx, g_ty, g_tz, g_xy)
+    // C = (g_xz, g_yz, 0, 0)
+    
+    RenderTexture matterGrid_tex; 
+    
+    RenderTexture geod_A_tex_A, geod_A_tex_B;
+    RenderTexture geod_B_tex_A, geod_B_tex_B;
+    RenderTexture geod_C_tex_A, geod_C_tex_B;
+    
+    int kernelPaintMatter;
+    int kernelSolveHamiltonian;
+    int kernelInitializeGeometry;
 
     List<Triangle> allTriangles;
     List<MeshInfo> allMeshInfo;
@@ -64,11 +87,19 @@ public class RayTracingManager : MonoBehaviour
     {
         lastTime = Time.realtimeSinceStartup;
         
-        if (Application.isPlaying && enableFirstPersonControls)
+        if (Application.isPlaying)
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            cursorLocked = true;
+            if (enableFirstPersonControls)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                cursorLocked = true;
+            }
+
+            if (geodesicSolver != null && useRelativisticView)
+            {
+                CalcularLookupTableGPU();
+            }
         }
     }
 
@@ -94,13 +125,11 @@ public class RayTracingManager : MonoBehaviour
             HandleFirstPersonControls();
         }
 
-        // Atalhos para visão relativística
         if (Input.GetKeyDown(KeyCode.H))
         {
             ToggleRelativisticView();
         }
         
-        // Atalho para modo ponto
         if (Input.GetKeyDown(KeyCode.P))
         {
             TogglePointMode();
@@ -177,7 +206,6 @@ public class RayTracingManager : MonoBehaviour
                 GUI.Label(rect, controlsText, style);
             }
 
-            // Mostrar status da visão relativística
             rect.y += 25;
             style.normal.textColor = useRelativisticView ? Color.cyan : Color.gray;
             string relativisticText = useRelativisticView ? 
@@ -185,7 +213,6 @@ public class RayTracingManager : MonoBehaviour
                 "Relativistic View: OFF | Press H to enable";
             GUI.Label(rect, relativisticText, style);
             
-            // Mostrar status do modo ponto
             rect.y += 25;
             style.normal.textColor = usePointMode ? Color.yellow : Color.gray;
             string pointModeText = usePointMode ? 
@@ -233,6 +260,17 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_UsePointMode", usePointMode ? 1 : 0);
         rayTracingMaterial.SetFloat("_StepSize", stepSize);
         rayTracingMaterial.SetInt("_MaxSteps", maxSteps);
+        
+        if (useRelativisticView && geod_A_tex_A != null) 
+        {
+            rayTracingMaterial.SetTexture("_GeodesicTable_A", geod_A_tex_A); 
+            rayTracingMaterial.SetTexture("_GeodesicTable_B", geod_B_tex_A);
+            rayTracingMaterial.SetTexture("_GeodesicTable_C", geod_C_tex_A);
+            
+            rayTracingMaterial.SetInt("_GridResolution", gridResolution);
+            rayTracingMaterial.SetVector("_GridCenter", gridCenter);
+            rayTracingMaterial.SetFloat("_GridSize", gridSize);
+        }
     }
 
     void UpdateCameraParams(Camera cam)
@@ -241,36 +279,6 @@ public class RayTracingManager : MonoBehaviour
         float planeWidth = planeHeight * cam.aspect;
         rayTracingMaterial.SetVector("ViewParams", new Vector3(planeWidth, planeHeight, focusDistance));
         rayTracingMaterial.SetMatrix("CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
-    }
-
-    void CreateMeshes()
-    {
-        RayTracedMesh[] meshObjects = FindObjectsByType<RayTracedMesh>(FindObjectsSortMode.None);
-
-        allTriangles ??= new List<Triangle>();
-        allMeshInfo ??= new List<MeshInfo>();
-        allTriangles.Clear();
-        allMeshInfo.Clear();
-
-        for (int i = 0; i < meshObjects.Length; i++)
-        {
-            MeshChunk[] chunks = meshObjects[i].GetSubMeshes();
-            foreach (MeshChunk chunk in chunks)
-            {
-                RayTracingMaterial material = meshObjects[i].GetMaterial(chunk.subMeshIndex);
-                allMeshInfo.Add(new MeshInfo(allTriangles.Count, chunk.triangles.Length, material, chunk.bounds));
-                allTriangles.AddRange(chunk.triangles);
-            }
-        }
-
-        numMeshChunks = allMeshInfo.Count;
-        numTriangles = allTriangles.Count;
-
-        ShaderHelper.CreateStructuredBuffer(ref triangleBuffer, allTriangles);
-        ShaderHelper.CreateStructuredBuffer(ref meshInfoBuffer, allMeshInfo);
-        rayTracingMaterial.SetBuffer("Triangles", triangleBuffer);
-        rayTracingMaterial.SetBuffer("AllMeshInfo", meshInfoBuffer);
-        rayTracingMaterial.SetInt("NumMeshes", allMeshInfo.Count);
     }
 
     void CreateSpheres()
@@ -301,13 +309,147 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetBuffer("Spheres", sphereBuffer);
         rayTracingMaterial.SetInt("NumSpheres", sphereObjects.Length);
     }
+    
+    void CreateMeshes()
+    {
+        RayTracedMesh[] meshObjects = FindObjectsByType<RayTracedMesh>(FindObjectsSortMode.None);
+        
+        if (allTriangles == null)
+        {
+            allTriangles = new List<Triangle>();
+        }
+        else
+        {
+            allTriangles.Clear();
+        }
+        
+        if (allMeshInfo == null)
+        {
+            allMeshInfo = new List<MeshInfo>();
+        }
+        else
+        {
+            allMeshInfo.Clear();
+        }
+
+        foreach (RayTracedMesh meshObject in meshObjects)
+        {
+            MeshChunk[] meshChunks = meshObject.GetSubMeshes();
+            
+            foreach (MeshChunk chunk in meshChunks)
+            {
+                int triangleStartIndex = allTriangles.Count;
+                allTriangles.AddRange(chunk.triangles);
+                
+                RayTracingMaterial material = meshObject.GetMaterial(chunk.subMeshIndex);
+                MeshInfo meshInfo = new MeshInfo(triangleStartIndex, chunk.triangles.Length, material, chunk.bounds);
+                allMeshInfo.Add(meshInfo);
+            }
+        }
+
+        numMeshChunks = allMeshInfo.Count;
+        numTriangles = allTriangles.Count;
+
+        ShaderHelper.CreateStructuredBuffer(ref triangleBuffer, allTriangles);
+        ShaderHelper.CreateStructuredBuffer(ref meshInfoBuffer, allMeshInfo);
+        
+        rayTracingMaterial.SetBuffer("Triangles", triangleBuffer);
+        rayTracingMaterial.SetBuffer("AllMeshInfo", meshInfoBuffer);
+        rayTracingMaterial.SetInt("NumMeshes", allMeshInfo.Count);
+    }
+ 
+    void InitRenderTexture(ref RenderTexture tex, int N)
+    {
+        if (tex != null) tex.Release();
+        tex = new RenderTexture(N, N, 0, RenderTextureFormat.ARGBFloat);  
+        tex.volumeDepth = N;
+        tex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        tex.enableRandomWrite = true; 
+        tex.Create();
+    }
+ 
+    void CalcularLookupTableGPU()
+    {
+        float startTime = Time.realtimeSinceStartup;
+         
+        kernelInitializeGeometry = geodesicSolver.FindKernel("InitializeGeometry");
+        kernelPaintMatter = geodesicSolver.FindKernel("PaintMatter");
+        kernelSolveHamiltonian = geodesicSolver.FindKernel("SolveHamiltonian"); 
+        
+        int N = gridResolution;
+        int threadGroups = Mathf.CeilToInt(N / 8.0f); 
+        int totalVoxels = N * N * N; 
+ 
+        InitRenderTexture(ref matterGrid_tex, N);
+        InitRenderTexture(ref geod_A_tex_A, N); InitRenderTexture(ref geod_A_tex_B, N);
+        InitRenderTexture(ref geod_B_tex_A, N); InitRenderTexture(ref geod_B_tex_B, N);
+        InitRenderTexture(ref geod_C_tex_A, N); InitRenderTexture(ref geod_C_tex_B, N); 
+ 
+        geodesicSolver.SetInt("_GridResolution", N);
+        geodesicSolver.SetFloat("_GridSize", gridSize);
+        geodesicSolver.SetVector("_GridCenter", gridCenter);
+        geodesicSolver.SetTexture(kernelPaintMatter, "_MatterGrid", matterGrid_tex);
+        if (sphereBuffer != null)
+        {
+            geodesicSolver.SetBuffer(kernelPaintMatter, "Spheres", sphereBuffer);
+            geodesicSolver.SetInt("NumSpheres", sphereBuffer.count);
+        } 
+        
+        geodesicSolver.Dispatch(kernelPaintMatter, threadGroups, threadGroups, threadGroups); 
+ 
+        geodesicSolver.SetTexture(kernelInitializeGeometry, "_GeodesicTable_A_Out", geod_A_tex_A);
+        geodesicSolver.SetTexture(kernelInitializeGeometry, "_GeodesicTable_B_Out", geod_B_tex_A);
+        geodesicSolver.SetTexture(kernelInitializeGeometry, "_GeodesicTable_C_Out", geod_C_tex_A);
+        geodesicSolver.Dispatch(kernelInitializeGeometry, threadGroups, threadGroups, threadGroups);
+  
+        geodesicSolver.SetTexture(kernelSolveHamiltonian, "_MatterGrid", matterGrid_tex);
+        geodesicSolver.SetInt("_GridResolution", N);
+        geodesicSolver.SetFloat("_GridSize", gridSize);
+         
+        RenderTexture texA_In = geod_A_tex_A; RenderTexture texA_Out = geod_A_tex_B;
+        RenderTexture texB_In = geod_B_tex_A; RenderTexture texB_Out = geod_B_tex_B;
+        RenderTexture texC_In = geod_C_tex_A; RenderTexture texC_Out = geod_C_tex_B;
+
+        int reportInterval = Mathf.Max(1, solverIterations / 10); 
+        
+        for (int iter = 0; iter < solverIterations; iter++)
+        { 
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_A_In", texA_In);
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_B_In", texB_In);
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_C_In", texC_In);
+             
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_A_Out", texA_Out);
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_B_Out", texB_Out);
+            geodesicSolver.SetTexture(kernelSolveHamiltonian, "_GeodesicTable_C_Out", texC_Out);
+ 
+            geodesicSolver.Dispatch(kernelSolveHamiltonian, threadGroups, threadGroups, threadGroups);
+             
+            (texA_In, texA_Out) = (texA_Out, texA_In);
+            (texB_In, texB_Out) = (texB_Out, texB_In);
+            (texC_In, texC_Out) = (texC_Out, texC_In);
+             
+            if ((iter + 1) % reportInterval == 0 || iter == 0)
+            {
+                float progress = ((iter + 1) / (float)solverIterations) * 100f;
+                float elapsed = Time.realtimeSinceStartup - startTime;
+                float estimated = (elapsed / (iter + 1)) * solverIterations;
+                float remaining = estimated - elapsed;
+                Debug.Log($"  • Iteração {iter + 1}/{solverIterations} ({progress:F1}%) - Tempo decorrido: {elapsed:F2}s - Estimado restante: {remaining:F2}s");
+            }
+        }
+        
+        float totalTime = Time.realtimeSinceStartup - startTime; 
+    }
 
     void OnDisable()
     {
         ShaderHelper.Release(sphereBuffer, triangleBuffer, meshInfoBuffer);
-    }
-
-    // --- Métodos Públicos ---
+         
+        if (matterGrid_tex != null) matterGrid_tex.Release();
+        if (geod_A_tex_A != null) geod_A_tex_A.Release(); if (geod_A_tex_B != null) geod_A_tex_B.Release();
+        if (geod_B_tex_A != null) geod_B_tex_A.Release(); if (geod_B_tex_B != null) geod_B_tex_B.Release();
+        if (geod_C_tex_A != null) geod_C_tex_A.Release(); if (geod_C_tex_B != null) geod_C_tex_B.Release();
+    } 
 
     public void ToggleRelativisticView()
     {

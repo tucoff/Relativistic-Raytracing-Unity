@@ -1,0 +1,253 @@
+#pragma kernel InitializeGeometry
+#pragma kernel PaintMatter
+#pragma kernel SolveHamiltonian
+ 
+#define G 6.67430e-11
+#define c 2.998e8
+#define PI 3.1415926535
+ 
+struct RayTracingMaterial
+{
+    float4 colour;
+    float4 emissionColour;
+    float4 specularColour;
+    float emissionStrength;
+    float smoothness;
+    float specularProbability;
+    int flag;
+};
+
+struct Sphere
+{
+    float3 position;
+    float radius;
+    RayTracingMaterial material;
+    float massa;
+};
+ 
+int _GridResolution;
+float _GridSize;
+float3 _GridCenter;
+ 
+StructuredBuffer<Sphere> Spheres;
+int NumSpheres;
+ 
+RWTexture3D<float4> _MatterGrid;
+ 
+Texture3D<float4> _GeodesicTable_A_In; 
+Texture3D<float4> _GeodesicTable_B_In; 
+Texture3D<float4> _GeodesicTable_C_In; 
+ 
+RWTexture3D<float4> _GeodesicTable_A_Out;
+RWTexture3D<float4> _GeodesicTable_B_Out;
+RWTexture3D<float4> _GeodesicTable_C_Out;
+ 
+float3 GridIDToWorld(int3 id)
+{
+    float3 uvw = (float3)id / (float)_GridResolution + (0.5 / _GridResolution);
+    return (uvw - 0.5) * _GridSize + _GridCenter;
+}
+ 
+float4 GetMetric_A(int3 id) { return _GeodesicTable_A_In[id]; }
+float4 GetMetric_B(int3 id) { return _GeodesicTable_B_In[id]; }
+float4 GetMetric_C(int3 id) { return _GeodesicTable_C_In[id]; }
+ 
+float Calculate_Ricci_Scalar_R3(int3 id)
+{
+    float h = _GridSize / _GridResolution; 
+     
+    if (any(id < 1) || any(id >= _GridResolution - 1))
+        return 0.0;
+      
+    float4 g_A_center = GetMetric_A(id);
+    float4 g_B_center = GetMetric_B(id);
+    float4 g_C_center = GetMetric_C(id);
+    
+    float g_xx = g_A_center.y;
+    float g_yy = g_A_center.z;
+    float g_zz = g_A_center.w;
+    float g_xy = g_B_center.w;
+    float g_xz = g_C_center.x;
+    float g_yz = g_C_center.y;
+     
+    float dg_xx_dx = (GetMetric_A(id + int3(1,0,0)).y - GetMetric_A(id - int3(1,0,0)).y) / (2*h);
+    float dg_xx_dy = (GetMetric_A(id + int3(0,1,0)).y - GetMetric_A(id - int3(0,1,0)).y) / (2*h);
+    float dg_xx_dz = (GetMetric_A(id + int3(0,0,1)).y - GetMetric_A(id - int3(0,0,1)).y) / (2*h);
+     
+    float dg_yy_dx = (GetMetric_A(id + int3(1,0,0)).z - GetMetric_A(id - int3(1,0,0)).z) / (2*h);
+    float dg_yy_dy = (GetMetric_A(id + int3(0,1,0)).z - GetMetric_A(id - int3(0,1,0)).z) / (2*h);
+    float dg_yy_dz = (GetMetric_A(id + int3(0,0,1)).z - GetMetric_A(id - int3(0,0,1)).z) / (2*h);
+     
+    float dg_zz_dx = (GetMetric_A(id + int3(1,0,0)).w - GetMetric_A(id - int3(1,0,0)).w) / (2*h);
+    float dg_zz_dy = (GetMetric_A(id + int3(0,1,0)).w - GetMetric_A(id - int3(0,1,0)).w) / (2*h);
+    float dg_zz_dz = (GetMetric_A(id + int3(0,0,1)).w - GetMetric_A(id - int3(0,0,1)).w) / (2*h);
+     
+    float dg_xy_dx = (GetMetric_B(id + int3(1,0,0)).w - GetMetric_B(id - int3(1,0,0)).w) / (2*h);
+    float dg_xy_dy = (GetMetric_B(id + int3(0,1,0)).w - GetMetric_B(id - int3(0,1,0)).w) / (2*h);
+    float dg_xy_dz = (GetMetric_B(id + int3(0,0,1)).w - GetMetric_B(id - int3(0,0,1)).w) / (2*h);
+     
+    float dg_xz_dx = (GetMetric_C(id + int3(1,0,0)).x - GetMetric_C(id - int3(1,0,0)).x) / (2*h);
+    float dg_xz_dy = (GetMetric_C(id + int3(0,1,0)).x - GetMetric_C(id - int3(0,1,0)).x) / (2*h);
+    float dg_xz_dz = (GetMetric_C(id + int3(0,0,1)).x - GetMetric_C(id - int3(0,0,1)).x) / (2*h);
+     
+    float dg_yz_dx = (GetMetric_C(id + int3(1,0,0)).y - GetMetric_C(id - int3(1,0,0)).y) / (2*h);
+    float dg_yz_dy = (GetMetric_C(id + int3(0,1,0)).y - GetMetric_C(id - int3(0,1,0)).y) / (2*h);
+    float dg_yz_dz = (GetMetric_C(id + int3(0,0,1)).y - GetMetric_C(id - int3(0,0,1)).y) / (2*h);
+     
+    float d2g_xx_dx2 = (GetMetric_A(id + int3(1,0,0)).y - 2*g_xx + GetMetric_A(id - int3(1,0,0)).y) / (h*h);
+    float d2g_yy_dy2 = (GetMetric_A(id + int3(0,1,0)).z - 2*g_yy + GetMetric_A(id - int3(0,1,0)).z) / (h*h);
+    float d2g_zz_dz2 = (GetMetric_A(id + int3(0,0,1)).w - 2*g_zz + GetMetric_A(id - int3(0,0,1)).w) / (h*h);
+     
+    float det = g_xx * (g_yy * g_zz - g_yz * g_yz)
+              - g_xy * (g_xy * g_zz - g_yz * g_xz)
+              + g_xz * (g_xy * g_yz - g_yy * g_xz);
+     
+    if (abs(det) < 1e-10)
+        return 0.0;
+    
+    float inv_det = 1.0 / det;
+     
+    float g_inv_xx = (g_yy * g_zz - g_yz * g_yz) * inv_det;
+    float g_inv_yy = (g_xx * g_zz - g_xz * g_xz) * inv_det;
+    float g_inv_zz = (g_xx * g_yy - g_xy * g_xy) * inv_det;
+    float g_inv_xy = (g_xz * g_yz - g_xy * g_zz) * inv_det;
+    float g_inv_xz = (g_xy * g_yz - g_xz * g_yy) * inv_det;
+    float g_inv_yz = (g_xy * g_xz - g_xx * g_yz) * inv_det;
+     
+    float R_xx = -0.5 * (g_inv_xx * d2g_xx_dx2 + g_inv_yy * d2g_xx_dx2 + g_inv_zz * d2g_xx_dx2);
+    float R_yy = -0.5 * (g_inv_xx * d2g_yy_dy2 + g_inv_yy * d2g_yy_dy2 + g_inv_zz * d2g_yy_dy2);
+    float R_zz = -0.5 * (g_inv_xx * d2g_zz_dz2 + g_inv_yy * d2g_zz_dz2 + g_inv_zz * d2g_zz_dz2);
+     
+    float R_xy = 0.0; 
+    float R_xz = 0.0;
+    float R_yz = 0.0;
+    
+    float R = g_inv_xx * R_xx 
+            + g_inv_yy * R_yy 
+            + g_inv_zz * R_zz
+            + 2.0 * g_inv_xy * R_xy
+            + 2.0 * g_inv_xz * R_xz
+            + 2.0 * g_inv_yz * R_yz;
+    
+    return R;
+}
+  
+void InitializeGeometry (uint3 id : SV_DispatchThreadID)
+{ 
+    _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1); 
+    _GeodesicTable_B_Out[id] = float4(0, 0, 0, 0);  
+    _GeodesicTable_C_Out[id] = float4(0, 0, 0, 0);  
+}
+ 
+void PaintMatter (uint3 id : SV_DispatchThreadID)
+{
+    float3 worldPos = GridIDToWorld(id);
+    float h = _GridSize / _GridResolution;  
+    float cellVolume = h * h * h;
+    
+    float densidade_rho_H = 0;
+    float3 densidade_S = float3(0,0,0); 
+     
+    for (int i = 0; i < NumSpheres; i++)
+    {
+        Sphere s = Spheres[i];
+        float3 offset = worldPos - s.position;
+        float dist = length(offset);
+         
+        if (dist < s.radius + h)
+        { 
+            float fraction = 1.0;
+            if (dist > s.radius - h)
+            { 
+                fraction = saturate((s.radius + h - dist) / (2.0 * h));
+            }
+             
+            float volume = (4.0/3.0) * PI * s.radius * s.radius * s.radius;
+            float rho_local = (s.massa * c * c) / volume;
+            densidade_rho_H += rho_local * fraction;
+             
+            if (dist < s.radius)
+            {
+                float omega_z = sqrt(G * s.massa / (s.radius * s.radius * s.radius));
+                float3 velocity_rotation = float3(
+                    -omega_z * offset.y,  
+                     omega_z * offset.x, 
+                     0 
+                );
+                 
+                densidade_S += (rho_local / (c * c)) * velocity_rotation * fraction;
+            }
+        }
+    }
+    
+    _MatterGrid[id] = float4(densidade_rho_H, densidade_S.x, densidade_S.y, densidade_S.z);
+}
+  
+void SolveHamiltonian (uint3 id : SV_DispatchThreadID)
+{ 
+    if (any(id < 1) || any(id >= _GridResolution - 1))
+    { 
+        _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1);
+        _GeodesicTable_B_Out[id] = float4(0, 0, 0, 0);
+        _GeodesicTable_C_Out[id] = float4(0, 0, 0, 0);
+        return;
+    }
+     
+    float4 matter = _MatterGrid[id];
+    float rho_H = matter.x; 
+    float3 S = matter.yzw;  
+     
+    float4 g_A = GetMetric_A(id);
+    float4 g_B = GetMetric_B(id);
+    float4 g_C = GetMetric_C(id);
+     
+    float h = _GridSize / _GridResolution;
+     
+    float div_S = (
+        (S.x - _MatterGrid[id - int3(1,0,0)].y) / h +
+        (S.y - _MatterGrid[id - int3(0,1,0)].z) / h +
+        (S.z - _MatterGrid[id - int3(0,0,1)].w) / h
+    ) / 3.0;
+     
+    float coupling_momentum = 0.001; 
+    g_B.x += coupling_momentum * (8 * PI * G * S.x) / (c*c*c*c);  
+    g_B.y += coupling_momentum * (8 * PI * G * S.y) / (c*c*c*c);  
+    g_B.z += coupling_momentum * (8 * PI * G * S.z) / (c*c*c*c); 
+     
+    float Lado_da_Materia = (16 * PI * G * rho_H) / (c*c*c*c);
+     
+    float R_calculado = Calculate_Ricci_Scalar_R3(id);
+     
+    float Erro = R_calculado - Lado_da_Materia;
+      
+    float omega = 0.5; 
+    float taxa_de_ajuste = omega * 0.01;
+     
+    float4 g_A_avg = (
+        GetMetric_A(id + int3(1,0,0)) + GetMetric_A(id - int3(1,0,0)) +
+        GetMetric_A(id + int3(0,1,0)) + GetMetric_A(id - int3(0,1,0)) +
+        GetMetric_A(id + int3(0,0,1)) + GetMetric_A(id - int3(0,0,1))
+    ) / 6.0;
+     
+    g_A.x = -1.0; 
+     
+    g_A.y = lerp(g_A.y, g_A_avg.y, 0.3) - taxa_de_ajuste * Erro; 
+    g_A.z = lerp(g_A.z, g_A_avg.z, 0.3) - taxa_de_ajuste * Erro; 
+    g_A.w = lerp(g_A.w, g_A_avg.w, 0.3) - taxa_de_ajuste * Erro; 
+     
+    g_A.y = clamp(g_A.y, 0.1, 10.0);
+    g_A.z = clamp(g_A.z, 0.1, 10.0);
+    g_A.w = clamp(g_A.w, 0.1, 10.0);
+     
+    g_B.w *= 0.999; 
+    g_C.x *= 0.999; 
+    g_C.y *= 0.999; 
+     
+    g_B.x = clamp(g_B.x, -0.5, 0.5);
+    g_B.y = clamp(g_B.y, -0.5, 0.5);
+    g_B.z = clamp(g_B.z, -0.5, 0.5);
+     
+    _GeodesicTable_A_Out[id] = g_A;
+    _GeodesicTable_B_Out[id] = g_B;
+    _GeodesicTable_C_Out[id] = g_C;
+}
