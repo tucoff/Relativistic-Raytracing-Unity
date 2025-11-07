@@ -1,6 +1,7 @@
 #pragma kernel InitializeGeometry
 #pragma kernel PaintMatter
 #pragma kernel SolveHamiltonian
+#pragma kernel CalculateChristoffelSymbols
  
 #define G 6.67430e-11
 #define c 2.998e8
@@ -41,6 +42,18 @@ Texture3D<float4> _GeodesicTable_C_In;
 RWTexture3D<float4> _GeodesicTable_A_Out;
 RWTexture3D<float4> _GeodesicTable_B_Out;
 RWTexture3D<float4> _GeodesicTable_C_Out;
+
+// Texturas de saída para os Símbolos de Christoffel (40 componentes em 10 float4)
+RWTexture3D<float4> _Christoffel_Out_1;
+RWTexture3D<float4> _Christoffel_Out_2;
+RWTexture3D<float4> _Christoffel_Out_3;
+RWTexture3D<float4> _Christoffel_Out_4;
+RWTexture3D<float4> _Christoffel_Out_5;
+RWTexture3D<float4> _Christoffel_Out_6;
+RWTexture3D<float4> _Christoffel_Out_7;
+RWTexture3D<float4> _Christoffel_Out_8;
+RWTexture3D<float4> _Christoffel_Out_9;
+RWTexture3D<float4> _Christoffel_Out_10;
  
 float3 GridIDToWorld(int3 id)
 {
@@ -132,13 +145,15 @@ float Calculate_Ricci_Scalar_R3(int3 id)
     return R;
 }
   
+[numthreads(8,8,8)]
 void InitializeGeometry (uint3 id : SV_DispatchThreadID)
 { 
     _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1); 
     _GeodesicTable_B_Out[id] = float4(0, 0, 0, 0);  
     _GeodesicTable_C_Out[id] = float4(0, 0, 0, 0);  
 }
- 
+
+[numthreads(8,8,8)] 
 void PaintMatter (uint3 id : SV_DispatchThreadID)
 {
     float3 worldPos = GridIDToWorld(id);
@@ -183,6 +198,7 @@ void PaintMatter (uint3 id : SV_DispatchThreadID)
     _MatterGrid[id] = float4(densidade_rho_H, densidade_S.x, densidade_S.y, densidade_S.z);
 }
   
+[numthreads(8,8,8)]
 void SolveHamiltonian (uint3 id : SV_DispatchThreadID)
 { 
     if (any(id < 1) || any(id >= _GridResolution - 1))
@@ -250,4 +266,515 @@ void SolveHamiltonian (uint3 id : SV_DispatchThreadID)
     _GeodesicTable_A_Out[id] = g_A;
     _GeodesicTable_B_Out[id] = g_B;
     _GeodesicTable_C_Out[id] = g_C;
+}
+
+// ========================================================================
+// Novo Kernel: Calcular Símbolos de Christoffel
+// ========================================================================
+[numthreads(8,8,8)]
+void CalculateChristoffelSymbols (uint3 id : SV_DispatchThreadID)
+{
+    // Verifica se está dentro dos limites
+    if (any(id < 1) || any(id >= _GridResolution - 1))
+    {
+        // Inicializa com zeros nas bordas
+        _Christoffel_Out_1[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_2[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_3[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_4[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_5[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_6[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_7[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_8[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_9[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_10[id] = float4(0, 0, 0, 0);
+        return;
+    }
+    
+    float h = _GridSize / _GridResolution;
+    
+    // ========================================================================
+    // 1. Lê a métrica no ponto central
+    // ========================================================================
+    float4 g_A_center = GetMetric_A(id);
+    float4 g_B_center = GetMetric_B(id);
+    float4 g_C_center = GetMetric_C(id);
+    
+    float g_tt = g_A_center.x;
+    float g_xx = g_A_center.y;
+    float g_yy = g_A_center.z;
+    float g_zz = g_A_center.w;
+    float g_tx = g_B_center.x;
+    float g_ty = g_B_center.y;
+    float g_tz = g_B_center.z;
+    float g_xy = g_B_center.w;
+    float g_xz = g_C_center.x;
+    float g_yz = g_C_center.y;
+    
+    // ========================================================================
+    // 2. Calcula a métrica inversa 4x4 completa usando determinante e cofatores
+    // ========================================================================
+    
+    // Submatrizes 3x3 para cofatores
+    // Cofator C_00 (elemento tt): Remove linha 0, coluna 0
+    float det_C00 = g_xx * (g_yy * g_zz - g_yz * g_yz)
+                  - g_xy * (g_xy * g_zz - g_yz * g_xz)
+                  + g_xz * (g_xy * g_yz - g_yy * g_xz);
+    
+    // Cofator C_01 (elemento tx): Remove linha 0, coluna 1
+    float det_C01 = g_tx * (g_yy * g_zz - g_yz * g_yz)
+                  - g_xy * (g_ty * g_zz - g_yz * g_tz)
+                  + g_xz * (g_ty * g_yz - g_yy * g_tz);
+    
+    // Cofator C_02 (elemento ty): Remove linha 0, coluna 2
+    float det_C02 = g_tx * (g_xy * g_zz - g_yz * g_xz)
+                  - g_xx * (g_ty * g_zz - g_yz * g_tz)
+                  + g_xz * (g_ty * g_xz - g_xy * g_tz);
+    
+    // Cofator C_03 (elemento tz): Remove linha 0, coluna 3
+    float det_C03 = g_tx * (g_xy * g_yz - g_yy * g_xz)
+                  - g_xx * (g_ty * g_yz - g_yy * g_tz)
+                  + g_xy * (g_ty * g_xz - g_xy * g_tz);
+    
+    // Cofator C_11 (elemento xx): Remove linha 1, coluna 1
+    float det_C11 = g_tt * (g_yy * g_zz - g_yz * g_yz)
+                  - g_ty * (g_ty * g_zz - g_yz * g_tz)
+                  + g_tz * (g_ty * g_yz - g_yy * g_tz);
+    
+    // Cofator C_12 (elemento xy): Remove linha 1, coluna 2
+    float det_C12 = g_tt * (g_xy * g_zz - g_yz * g_xz)
+                  - g_tx * (g_ty * g_zz - g_yz * g_tz)
+                  + g_tz * (g_ty * g_xz - g_xy * g_tz);
+    
+    // Cofator C_13 (elemento xz): Remove linha 1, coluna 3
+    float det_C13 = g_tt * (g_xy * g_yz - g_yy * g_xz)
+                  - g_tx * (g_ty * g_yz - g_yy * g_tz)
+                  + g_ty * (g_ty * g_xz - g_xy * g_tz);
+    
+    // Cofator C_22 (elemento yy): Remove linha 2, coluna 2
+    float det_C22 = g_tt * (g_xx * g_zz - g_xz * g_xz)
+                  - g_tx * (g_tx * g_zz - g_xz * g_tz)
+                  + g_tz * (g_tx * g_xz - g_xx * g_tz);
+    
+    // Cofator C_23 (elemento yz): Remove linha 2, coluna 3
+    float det_C23 = g_tt * (g_xx * g_yz - g_xy * g_xz)
+                  - g_tx * (g_tx * g_yz - g_xy * g_tz)
+                  + g_ty * (g_tx * g_xz - g_xx * g_tz);
+    
+    // Cofator C_33 (elemento zz): Remove linha 3, coluna 3
+    float det_C33 = g_tt * (g_xx * g_yy - g_xy * g_xy)
+                  - g_tx * (g_tx * g_yy - g_xy * g_ty)
+                  + g_ty * (g_tx * g_xy - g_xx * g_ty);
+    
+    // Determinante 4x4
+    float det = g_tt * det_C00 - g_tx * det_C01 + g_ty * det_C02 - g_tz * det_C03;
+    
+    if (abs(det) < 1e-10)
+    {
+        // Métrica singular, retorna zeros
+        _Christoffel_Out_1[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_2[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_3[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_4[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_5[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_6[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_7[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_8[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_9[id] = float4(0, 0, 0, 0);
+        _Christoffel_Out_10[id] = float4(0, 0, 0, 0);
+        return;
+    }
+    
+    float inv_det = 1.0 / det;
+    
+    // Métrica inversa completa (simétrica)
+    float g_inv_tt = det_C00 * inv_det;
+    float g_inv_tx = -det_C01 * inv_det;
+    float g_inv_ty = det_C02 * inv_det;
+    float g_inv_tz = -det_C03 * inv_det;
+    float g_inv_xx = det_C11 * inv_det;
+    float g_inv_xy = -det_C12 * inv_det;
+    float g_inv_xz = det_C13 * inv_det;
+    float g_inv_yy = det_C22 * inv_det;
+    float g_inv_yz = -det_C23 * inv_det;
+    float g_inv_zz = det_C33 * inv_det;
+    
+    // ========================================================================
+    // 3. Calcula as derivadas parciais de TODOS os componentes da métrica
+    // ========================================================================
+    
+    // Derivadas de g_tt
+    float dg_tt_dt = 0.0; // Métrica estacionária
+    float dg_tt_dx = (GetMetric_A(id + int3(1,0,0)).x - GetMetric_A(id - int3(1,0,0)).x) / (2*h);
+    float dg_tt_dy = (GetMetric_A(id + int3(0,1,0)).x - GetMetric_A(id - int3(0,1,0)).x) / (2*h);
+    float dg_tt_dz = (GetMetric_A(id + int3(0,0,1)).x - GetMetric_A(id - int3(0,0,1)).x) / (2*h);
+    
+    // Derivadas de g_xx
+    float dg_xx_dt = 0.0;
+    float dg_xx_dx = (GetMetric_A(id + int3(1,0,0)).y - GetMetric_A(id - int3(1,0,0)).y) / (2*h);
+    float dg_xx_dy = (GetMetric_A(id + int3(0,1,0)).y - GetMetric_A(id - int3(0,1,0)).y) / (2*h);
+    float dg_xx_dz = (GetMetric_A(id + int3(0,0,1)).y - GetMetric_A(id - int3(0,0,1)).y) / (2*h);
+    
+    // Derivadas de g_yy
+    float dg_yy_dt = 0.0;
+    float dg_yy_dx = (GetMetric_A(id + int3(1,0,0)).z - GetMetric_A(id - int3(1,0,0)).z) / (2*h);
+    float dg_yy_dy = (GetMetric_A(id + int3(0,1,0)).z - GetMetric_A(id - int3(0,1,0)).z) / (2*h);
+    float dg_yy_dz = (GetMetric_A(id + int3(0,0,1)).z - GetMetric_A(id - int3(0,0,1)).z) / (2*h);
+    
+    // Derivadas de g_zz
+    float dg_zz_dt = 0.0;
+    float dg_zz_dx = (GetMetric_A(id + int3(1,0,0)).w - GetMetric_A(id - int3(1,0,0)).w) / (2*h);
+    float dg_zz_dy = (GetMetric_A(id + int3(0,1,0)).w - GetMetric_A(id - int3(0,1,0)).w) / (2*h);
+    float dg_zz_dz = (GetMetric_A(id + int3(0,0,1)).w - GetMetric_A(id - int3(0,0,1)).w) / (2*h);
+    
+    // Derivadas de g_tx
+    float dg_tx_dt = 0.0;
+    float dg_tx_dx = (GetMetric_B(id + int3(1,0,0)).x - GetMetric_B(id - int3(1,0,0)).x) / (2*h);
+    float dg_tx_dy = (GetMetric_B(id + int3(0,1,0)).x - GetMetric_B(id - int3(0,1,0)).x) / (2*h);
+    float dg_tx_dz = (GetMetric_B(id + int3(0,0,1)).x - GetMetric_B(id - int3(0,0,1)).x) / (2*h);
+    
+    // Derivadas de g_ty
+    float dg_ty_dt = 0.0;
+    float dg_ty_dx = (GetMetric_B(id + int3(1,0,0)).y - GetMetric_B(id - int3(1,0,0)).y) / (2*h);
+    float dg_ty_dy = (GetMetric_B(id + int3(0,1,0)).y - GetMetric_B(id - int3(0,1,0)).y) / (2*h);
+    float dg_ty_dz = (GetMetric_B(id + int3(0,0,1)).y - GetMetric_B(id - int3(0,0,1)).y) / (2*h);
+    
+    // Derivadas de g_tz
+    float dg_tz_dt = 0.0;
+    float dg_tz_dx = (GetMetric_B(id + int3(1,0,0)).z - GetMetric_B(id - int3(1,0,0)).z) / (2*h);
+    float dg_tz_dy = (GetMetric_B(id + int3(0,1,0)).z - GetMetric_B(id - int3(0,1,0)).z) / (2*h);
+    float dg_tz_dz = (GetMetric_B(id + int3(0,0,1)).z - GetMetric_B(id - int3(0,0,1)).z) / (2*h);
+    
+    // Derivadas de g_xy
+    float dg_xy_dt = 0.0;
+    float dg_xy_dx = (GetMetric_B(id + int3(1,0,0)).w - GetMetric_B(id - int3(1,0,0)).w) / (2*h);
+    float dg_xy_dy = (GetMetric_B(id + int3(0,1,0)).w - GetMetric_B(id - int3(0,1,0)).w) / (2*h);
+    float dg_xy_dz = (GetMetric_B(id + int3(0,0,1)).w - GetMetric_B(id - int3(0,0,1)).w) / (2*h);
+    
+    // Derivadas de g_xz
+    float dg_xz_dt = 0.0;
+    float dg_xz_dx = (GetMetric_C(id + int3(1,0,0)).x - GetMetric_C(id - int3(1,0,0)).x) / (2*h);
+    float dg_xz_dy = (GetMetric_C(id + int3(0,1,0)).x - GetMetric_C(id - int3(0,1,0)).x) / (2*h);
+    float dg_xz_dz = (GetMetric_C(id + int3(0,0,1)).x - GetMetric_C(id - int3(0,0,1)).x) / (2*h);
+    
+    // Derivadas de g_yz
+    float dg_yz_dt = 0.0;
+    float dg_yz_dx = (GetMetric_C(id + int3(1,0,0)).y - GetMetric_C(id - int3(1,0,0)).y) / (2*h);
+    float dg_yz_dy = (GetMetric_C(id + int3(0,1,0)).y - GetMetric_C(id - int3(0,1,0)).y) / (2*h);
+    float dg_yz_dz = (GetMetric_C(id + int3(0,0,1)).y - GetMetric_C(id - int3(0,0,1)).y) / (2*h);
+    
+    // ========================================================================
+    // 4. Calcula os 40 Símbolos de Christoffel únicos
+    // Γ^μ_νσ = 1/2 * g^μα * (∂_ν g_ασ + ∂_σ g_αν - ∂_α g_νσ)
+    // ========================================================================
+    
+    // Γ^t_νσ (10 componentes: tt, tx, ty, tz, xx, xy, xz, yy, yz, zz)
+    float Gamma_t_tt = 0.5 * (
+        g_inv_tt * (dg_tt_dt + dg_tt_dt - dg_tt_dt) +
+        g_inv_tx * (dg_tx_dt + dg_tx_dt - dg_tt_dx) +
+        g_inv_ty * (dg_ty_dt + dg_ty_dt - dg_tt_dy) +
+        g_inv_tz * (dg_tz_dt + dg_tz_dt - dg_tt_dz)
+    );
+    
+    float Gamma_t_tx = 0.5 * (
+        g_inv_tt * (dg_tt_dx + dg_tx_dt - dg_tx_dt) +
+        g_inv_tx * (dg_tx_dx + dg_xx_dt - dg_tx_dx) +
+        g_inv_ty * (dg_ty_dx + dg_xy_dt - dg_tx_dy) +
+        g_inv_tz * (dg_tz_dx + dg_xz_dt - dg_tx_dz)
+    );
+    
+    float Gamma_t_ty = 0.5 * (
+        g_inv_tt * (dg_tt_dy + dg_ty_dt - dg_ty_dt) +
+        g_inv_tx * (dg_tx_dy + dg_xy_dt - dg_ty_dx) +
+        g_inv_ty * (dg_ty_dy + dg_yy_dt - dg_ty_dy) +
+        g_inv_tz * (dg_tz_dy + dg_yz_dt - dg_ty_dz)
+    );
+    
+    float Gamma_t_tz = 0.5 * (
+        g_inv_tt * (dg_tt_dz + dg_tz_dt - dg_tz_dt) +
+        g_inv_tx * (dg_tx_dz + dg_xz_dt - dg_tz_dx) +
+        g_inv_ty * (dg_ty_dz + dg_yz_dt - dg_tz_dy) +
+        g_inv_tz * (dg_tz_dz + dg_zz_dt - dg_tz_dz)
+    );
+    
+    float Gamma_t_xx = 0.5 * (
+        g_inv_tt * (dg_tx_dx + dg_tx_dx - dg_xx_dt) +
+        g_inv_tx * (dg_xx_dx + dg_xx_dx - dg_xx_dx) +
+        g_inv_ty * (dg_xy_dx + dg_xy_dx - dg_xx_dy) +
+        g_inv_tz * (dg_xz_dx + dg_xz_dx - dg_xx_dz)
+    );
+    
+    float Gamma_t_xy = 0.5 * (
+        g_inv_tt * (dg_tx_dy + dg_ty_dx - dg_xy_dt) +
+        g_inv_tx * (dg_xx_dy + dg_xy_dx - dg_xy_dx) +
+        g_inv_ty * (dg_xy_dy + dg_yy_dx - dg_xy_dy) +
+        g_inv_tz * (dg_xz_dy + dg_yz_dx - dg_xy_dz)
+    );
+    
+    float Gamma_t_xz = 0.5 * (
+        g_inv_tt * (dg_tx_dz + dg_tz_dx - dg_xz_dt) +
+        g_inv_tx * (dg_xx_dz + dg_xz_dx - dg_xz_dx) +
+        g_inv_ty * (dg_xy_dz + dg_yz_dx - dg_xz_dy) +
+        g_inv_tz * (dg_xz_dz + dg_zz_dx - dg_xz_dz)
+    );
+    
+    float Gamma_t_yy = 0.5 * (
+        g_inv_tt * (dg_ty_dy + dg_ty_dy - dg_yy_dt) +
+        g_inv_tx * (dg_xy_dy + dg_xy_dy - dg_yy_dx) +
+        g_inv_ty * (dg_yy_dy + dg_yy_dy - dg_yy_dy) +
+        g_inv_tz * (dg_yz_dy + dg_yz_dy - dg_yy_dz)
+    );
+    
+    float Gamma_t_yz = 0.5 * (
+        g_inv_tt * (dg_ty_dz + dg_tz_dy - dg_yz_dt) +
+        g_inv_tx * (dg_xy_dz + dg_xz_dy - dg_yz_dx) +
+        g_inv_ty * (dg_yy_dz + dg_yz_dy - dg_yz_dy) +
+        g_inv_tz * (dg_yz_dz + dg_zz_dy - dg_yz_dz)
+    );
+    
+    float Gamma_t_zz = 0.5 * (
+        g_inv_tt * (dg_tz_dz + dg_tz_dz - dg_zz_dt) +
+        g_inv_tx * (dg_xz_dz + dg_xz_dz - dg_zz_dx) +
+        g_inv_ty * (dg_yz_dz + dg_yz_dz - dg_zz_dy) +
+        g_inv_tz * (dg_zz_dz + dg_zz_dz - dg_zz_dz)
+    );
+    
+    // Γ^x_νσ (10 componentes: tt, tx, ty, tz, xx, xy, xz, yy, yz, zz)
+    float Gamma_x_tt = 0.5 * (
+        g_inv_tx * (dg_tt_dt + dg_tt_dt - dg_tt_dt) +
+        g_inv_xx * (dg_tx_dt + dg_tx_dt - dg_tt_dx) +
+        g_inv_xy * (dg_ty_dt + dg_ty_dt - dg_tt_dy) +
+        g_inv_xz * (dg_tz_dt + dg_tz_dt - dg_tt_dz)
+    );
+    
+    float Gamma_x_tx = 0.5 * (
+        g_inv_tx * (dg_tt_dx + dg_tx_dt - dg_tx_dt) +
+        g_inv_xx * (dg_tx_dx + dg_xx_dt - dg_tx_dx) +
+        g_inv_xy * (dg_ty_dx + dg_xy_dt - dg_tx_dy) +
+        g_inv_xz * (dg_tz_dx + dg_xz_dt - dg_tx_dz)
+    );
+    
+    float Gamma_x_ty = 0.5 * (
+        g_inv_tx * (dg_tt_dy + dg_ty_dt - dg_ty_dt) +
+        g_inv_xx * (dg_tx_dy + dg_xy_dt - dg_ty_dx) +
+        g_inv_xy * (dg_ty_dy + dg_yy_dt - dg_ty_dy) +
+        g_inv_xz * (dg_tz_dy + dg_yz_dt - dg_ty_dz)
+    );
+    
+    float Gamma_x_tz = 0.5 * (
+        g_inv_tx * (dg_tt_dz + dg_tz_dt - dg_tz_dt) +
+        g_inv_xx * (dg_tx_dz + dg_xz_dt - dg_tz_dx) +
+        g_inv_xy * (dg_ty_dz + dg_yz_dt - dg_tz_dy) +
+        g_inv_xz * (dg_tz_dz + dg_zz_dt - dg_tz_dz)
+    );
+    
+    float Gamma_x_xx = 0.5 * (
+        g_inv_tx * (dg_tx_dx + dg_tx_dx - dg_xx_dt) +
+        g_inv_xx * (dg_xx_dx + dg_xx_dx - dg_xx_dx) +
+        g_inv_xy * (dg_xy_dx + dg_xy_dx - dg_xx_dy) +
+        g_inv_xz * (dg_xz_dx + dg_xz_dx - dg_xx_dz)
+    );
+    
+    float Gamma_x_xy = 0.5 * (
+        g_inv_tx * (dg_tx_dy + dg_ty_dx - dg_xy_dt) +
+        g_inv_xx * (dg_xx_dy + dg_xy_dx - dg_xy_dx) +
+        g_inv_xy * (dg_xy_dy + dg_yy_dx - dg_xy_dy) +
+        g_inv_xz * (dg_xz_dy + dg_yz_dx - dg_xy_dz)
+    );
+    
+    float Gamma_x_xz = 0.5 * (
+        g_inv_tx * (dg_tx_dz + dg_tz_dx - dg_xz_dt) +
+        g_inv_xx * (dg_xx_dz + dg_xz_dx - dg_xz_dx) +
+        g_inv_xy * (dg_xy_dz + dg_yz_dx - dg_xz_dy) +
+        g_inv_xz * (dg_xz_dz + dg_zz_dx - dg_xz_dz)
+    );
+    
+    float Gamma_x_yy = 0.5 * (
+        g_inv_tx * (dg_ty_dy + dg_ty_dy - dg_yy_dt) +
+        g_inv_xx * (dg_xy_dy + dg_xy_dy - dg_yy_dx) +
+        g_inv_xy * (dg_yy_dy + dg_yy_dy - dg_yy_dy) +
+        g_inv_xz * (dg_yz_dy + dg_yz_dy - dg_yy_dz)
+    );
+    
+    float Gamma_x_yz = 0.5 * (
+        g_inv_tx * (dg_ty_dz + dg_tz_dy - dg_yz_dt) +
+        g_inv_xx * (dg_xy_dz + dg_xz_dy - dg_yz_dx) +
+        g_inv_xy * (dg_yy_dz + dg_yz_dy - dg_yz_dy) +
+        g_inv_xz * (dg_yz_dz + dg_zz_dy - dg_yz_dz)
+    );
+    
+    float Gamma_x_zz = 0.5 * (
+        g_inv_tx * (dg_tz_dz + dg_tz_dz - dg_zz_dt) +
+        g_inv_xx * (dg_xz_dz + dg_xz_dz - dg_zz_dx) +
+        g_inv_xy * (dg_yz_dz + dg_yz_dz - dg_zz_dy) +
+        g_inv_xz * (dg_zz_dz + dg_zz_dz - dg_zz_dz)
+    );
+    
+    // Γ^y_νσ (10 componentes: tt, tx, ty, tz, xx, xy, xz, yy, yz, zz)
+    float Gamma_y_tt = 0.5 * (
+        g_inv_ty * (dg_tt_dt + dg_tt_dt - dg_tt_dt) +
+        g_inv_xy * (dg_tx_dt + dg_tx_dt - dg_tt_dx) +
+        g_inv_yy * (dg_ty_dt + dg_ty_dt - dg_tt_dy) +
+        g_inv_yz * (dg_tz_dt + dg_tz_dt - dg_tt_dz)
+    );
+    
+    float Gamma_y_tx = 0.5 * (
+        g_inv_ty * (dg_tt_dx + dg_tx_dt - dg_tx_dt) +
+        g_inv_xy * (dg_tx_dx + dg_xx_dt - dg_tx_dx) +
+        g_inv_yy * (dg_ty_dx + dg_xy_dt - dg_tx_dy) +
+        g_inv_yz * (dg_tz_dx + dg_xz_dt - dg_tx_dz)
+    );
+    
+    float Gamma_y_ty = 0.5 * (
+        g_inv_ty * (dg_tt_dy + dg_ty_dt - dg_ty_dt) +
+        g_inv_xy * (dg_tx_dy + dg_xy_dt - dg_ty_dx) +
+        g_inv_yy * (dg_ty_dy + dg_yy_dt - dg_ty_dy) +
+        g_inv_yz * (dg_tz_dy + dg_yz_dt - dg_ty_dz)
+    );
+    
+    float Gamma_y_tz = 0.5 * (
+        g_inv_ty * (dg_tt_dz + dg_tz_dt - dg_tz_dt) +
+        g_inv_xy * (dg_tx_dz + dg_xz_dt - dg_tz_dx) +
+        g_inv_yy * (dg_ty_dz + dg_yz_dt - dg_tz_dy) +
+        g_inv_yz * (dg_tz_dz + dg_zz_dt - dg_tz_dz)
+    );
+    
+    float Gamma_y_xx = 0.5 * (
+        g_inv_ty * (dg_tx_dx + dg_tx_dx - dg_xx_dt) +
+        g_inv_xy * (dg_xx_dx + dg_xx_dx - dg_xx_dx) +
+        g_inv_yy * (dg_xy_dx + dg_xy_dx - dg_xx_dy) +
+        g_inv_yz * (dg_xz_dx + dg_xz_dx - dg_xx_dz)
+    );
+    
+    float Gamma_y_xy = 0.5 * (
+        g_inv_ty * (dg_tx_dy + dg_ty_dx - dg_xy_dt) +
+        g_inv_xy * (dg_xx_dy + dg_xy_dx - dg_xy_dx) +
+        g_inv_yy * (dg_xy_dy + dg_yy_dx - dg_xy_dy) +
+        g_inv_yz * (dg_xz_dy + dg_yz_dx - dg_xy_dz)
+    );
+    
+    float Gamma_y_xz = 0.5 * (
+        g_inv_ty * (dg_tx_dz + dg_tz_dx - dg_xz_dt) +
+        g_inv_xy * (dg_xx_dz + dg_xz_dx - dg_xz_dx) +
+        g_inv_yy * (dg_xy_dz + dg_yz_dx - dg_xz_dy) +
+        g_inv_yz * (dg_xz_dz + dg_zz_dx - dg_xz_dz)
+    );
+    
+    float Gamma_y_yy = 0.5 * (
+        g_inv_ty * (dg_ty_dy + dg_ty_dy - dg_yy_dt) +
+        g_inv_xy * (dg_xy_dy + dg_xy_dy - dg_yy_dx) +
+        g_inv_yy * (dg_yy_dy + dg_yy_dy - dg_yy_dy) +
+        g_inv_yz * (dg_yz_dy + dg_yz_dy - dg_yy_dz)
+    );
+    
+    float Gamma_y_yz = 0.5 * (
+        g_inv_ty * (dg_ty_dz + dg_tz_dy - dg_yz_dt) +
+        g_inv_xy * (dg_xy_dz + dg_xz_dy - dg_yz_dx) +
+        g_inv_yy * (dg_yy_dz + dg_yz_dy - dg_yz_dy) +
+        g_inv_yz * (dg_yz_dz + dg_zz_dy - dg_yz_dz)
+    );
+    
+    float Gamma_y_zz = 0.5 * (
+        g_inv_ty * (dg_tz_dz + dg_tz_dz - dg_zz_dt) +
+        g_inv_xy * (dg_xz_dz + dg_xz_dz - dg_zz_dx) +
+        g_inv_yy * (dg_yz_dz + dg_yz_dz - dg_zz_dy) +
+        g_inv_yz * (dg_zz_dz + dg_zz_dz - dg_zz_dz)
+    );
+    
+    // Γ^z_νσ (10 componentes: tt, tx, ty, tz, xx, xy, xz, yy, yz, zz)
+    float Gamma_z_tt = 0.5 * (
+        g_inv_tz * (dg_tt_dt + dg_tt_dt - dg_tt_dt) +
+        g_inv_xz * (dg_tx_dt + dg_tx_dt - dg_tt_dx) +
+        g_inv_yz * (dg_ty_dt + dg_ty_dt - dg_tt_dy) +
+        g_inv_zz * (dg_tz_dt + dg_tz_dt - dg_tt_dz)
+    );
+    
+    float Gamma_z_tx = 0.5 * (
+        g_inv_tz * (dg_tt_dx + dg_tx_dt - dg_tx_dt) +
+        g_inv_xz * (dg_tx_dx + dg_xx_dt - dg_tx_dx) +
+        g_inv_yz * (dg_ty_dx + dg_xy_dt - dg_tx_dy) +
+        g_inv_zz * (dg_tz_dx + dg_xz_dt - dg_tx_dz)
+    );
+    
+    float Gamma_z_ty = 0.5 * (
+        g_inv_tz * (dg_tt_dy + dg_ty_dt - dg_ty_dt) +
+        g_inv_xz * (dg_tx_dy + dg_xy_dt - dg_ty_dx) +
+        g_inv_yz * (dg_ty_dy + dg_yy_dt - dg_ty_dy) +
+        g_inv_zz * (dg_tz_dy + dg_yz_dt - dg_ty_dz)
+    );
+    
+    float Gamma_z_tz = 0.5 * (
+        g_inv_tz * (dg_tt_dz + dg_tz_dt - dg_tz_dt) +
+        g_inv_xz * (dg_tx_dz + dg_xz_dt - dg_tz_dx) +
+        g_inv_yz * (dg_ty_dz + dg_yz_dt - dg_tz_dy) +
+        g_inv_zz * (dg_tz_dz + dg_zz_dt - dg_tz_dz)
+    );
+    
+    float Gamma_z_xx = 0.5 * (
+        g_inv_tz * (dg_tx_dx + dg_tx_dx - dg_xx_dt) +
+        g_inv_xz * (dg_xx_dx + dg_xx_dx - dg_xx_dx) +
+        g_inv_yz * (dg_xy_dx + dg_xy_dx - dg_xx_dy) +
+        g_inv_zz * (dg_xz_dx + dg_xz_dx - dg_xx_dz)
+    );
+    
+    float Gamma_z_xy = 0.5 * (
+        g_inv_tz * (dg_tx_dy + dg_ty_dx - dg_xy_dt) +
+        g_inv_xz * (dg_xx_dy + dg_xy_dx - dg_xy_dx) +
+        g_inv_yz * (dg_xy_dy + dg_yy_dx - dg_xy_dy) +
+        g_inv_zz * (dg_xz_dy + dg_yz_dx - dg_xy_dz)
+    );
+    
+    float Gamma_z_xz = 0.5 * (
+        g_inv_tz * (dg_tx_dz + dg_tz_dx - dg_xz_dt) +
+        g_inv_xz * (dg_xx_dz + dg_xz_dx - dg_xz_dx) +
+        g_inv_yz * (dg_xy_dz + dg_yz_dx - dg_xz_dy) +
+        g_inv_zz * (dg_xz_dz + dg_zz_dx - dg_xz_dz)
+    );
+    
+    float Gamma_z_yy = 0.5 * (
+        g_inv_tz * (dg_ty_dy + dg_ty_dy - dg_yy_dt) +
+        g_inv_xz * (dg_xy_dy + dg_xy_dy - dg_yy_dx) +
+        g_inv_yz * (dg_yy_dy + dg_yy_dy - dg_yy_dy) +
+        g_inv_zz * (dg_yz_dy + dg_yz_dy - dg_yy_dz)
+    );
+    
+    float Gamma_z_yz = 0.5 * (
+        g_inv_tz * (dg_ty_dz + dg_tz_dy - dg_yz_dt) +
+        g_inv_xz * (dg_xy_dz + dg_xz_dy - dg_yz_dx) +
+        g_inv_yz * (dg_yy_dz + dg_yz_dy - dg_yz_dy) +
+        g_inv_zz * (dg_yz_dz + dg_zz_dy - dg_yz_dz)
+    );
+    
+    float Gamma_z_zz = 0.5 * (
+        g_inv_tz * (dg_tz_dz + dg_tz_dz - dg_zz_dt) +
+        g_inv_xz * (dg_xz_dz + dg_xz_dz - dg_zz_dx) +
+        g_inv_yz * (dg_yz_dz + dg_yz_dz - dg_zz_dy) +
+        g_inv_zz * (dg_zz_dz + dg_zz_dz - dg_zz_dz)
+    );
+    
+    // ========================================================================
+    // 5. Empacota os 40 componentes em 10 float4
+    // ========================================================================
+    // Layout:
+    // Texture 1: Gamma_t_tt, Gamma_t_tx, Gamma_t_ty, Gamma_t_tz
+    // Texture 2: Gamma_t_xx, Gamma_t_xy, Gamma_t_xz, Gamma_t_yy
+    // Texture 3: Gamma_t_yz, Gamma_t_zz, Gamma_x_tt, Gamma_x_tx
+    // Texture 4: Gamma_x_ty, Gamma_x_tz, Gamma_x_xx, Gamma_x_xy
+    // Texture 5: Gamma_x_xz, Gamma_x_yy, Gamma_x_yz, Gamma_x_zz
+    // Texture 6: Gamma_y_tt, Gamma_y_tx, Gamma_y_ty, Gamma_y_tz
+    // Texture 7: Gamma_y_xx, Gamma_y_xy, Gamma_y_xz, Gamma_y_yy
+    // Texture 8: Gamma_y_yz, Gamma_y_zz, Gamma_z_tt, Gamma_z_tx
+    // Texture 9: Gamma_z_ty, Gamma_z_tz, Gamma_z_xx, Gamma_z_xy
+    // Texture 10: Gamma_z_xz, Gamma_z_yy, Gamma_z_yz, Gamma_z_zz
+    
+    _Christoffel_Out_1[id] = float4(Gamma_t_tt, Gamma_t_tx, Gamma_t_ty, Gamma_t_tz);
+    _Christoffel_Out_2[id] = float4(Gamma_t_xx, Gamma_t_xy, Gamma_t_xz, Gamma_t_yy);
+    _Christoffel_Out_3[id] = float4(Gamma_t_yz, Gamma_t_zz, Gamma_x_tt, Gamma_x_tx);
+    _Christoffel_Out_4[id] = float4(Gamma_x_ty, Gamma_x_tz, Gamma_x_xx, Gamma_x_xy);
+    _Christoffel_Out_5[id] = float4(Gamma_x_xz, Gamma_x_yy, Gamma_x_yz, Gamma_x_zz);
+    _Christoffel_Out_6[id] = float4(Gamma_y_tt, Gamma_y_tx, Gamma_y_ty, Gamma_y_tz);
+    _Christoffel_Out_7[id] = float4(Gamma_y_xx, Gamma_y_xy, Gamma_y_xz, Gamma_y_yy);
+    _Christoffel_Out_8[id] = float4(Gamma_y_yz, Gamma_y_zz, Gamma_z_tt, Gamma_z_tx);
+    _Christoffel_Out_9[id] = float4(Gamma_z_ty, Gamma_z_tz, Gamma_z_xx, Gamma_z_xy);
+    _Christoffel_Out_10[id] = float4(Gamma_z_xz, Gamma_z_yy, Gamma_z_yz, Gamma_z_zz);
 }

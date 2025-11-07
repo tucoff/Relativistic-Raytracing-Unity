@@ -90,7 +90,19 @@ Shader "Custom/RayTracingRelativistic"
  
             Texture3D<float4> _GeodesicTable_A; 
             Texture3D<float4> _GeodesicTable_B; 
-            Texture3D<float4> _GeodesicTable_C; 
+            Texture3D<float4> _GeodesicTable_C;
+            
+            // Texturas com os Símbolos de Christoffel pré-calculados (40 componentes em 10 float4)
+            Texture3D<float4> _Christoffel_1;
+            Texture3D<float4> _Christoffel_2;
+            Texture3D<float4> _Christoffel_3;
+            Texture3D<float4> _Christoffel_4;
+            Texture3D<float4> _Christoffel_5;
+            Texture3D<float4> _Christoffel_6;
+            Texture3D<float4> _Christoffel_7;
+            Texture3D<float4> _Christoffel_8;
+            Texture3D<float4> _Christoffel_9;
+            Texture3D<float4> _Christoffel_10; 
              
             SamplerState sampler_linear_clamp; 
              
@@ -194,142 +206,150 @@ Shader "Custom/RayTracingRelativistic"
  
             float4 CalculateGeodesicAcceleration(float4 pos_4D, float4 vel_4D)
             {
-                float3 pos_3D = pos_4D.yzw; 
-                 
-                float4 g_A, g_B, g_C;
-                GetMetricAt(pos_3D, g_A, g_B, g_C);
-                 
-                float g_tt = g_A.x;
-                float g_xx = g_A.y;
-                float g_yy = g_A.z;
-                float g_zz = g_A.w;
-                float g_tx = g_B.x;
-                float g_ty = g_B.y;
-                float g_tz = g_B.z;
-                float g_xy = g_B.w;
-                float g_xz = g_C.x;
-                float g_yz = g_C.y;
-                 
-                float dx = _GridSize / _GridResolution * 0.5; 
+                float3 pos_3D = pos_4D.yzw;
                 
-                float4 g_A_px, g_B_px, g_C_px; 
-                float4 g_A_mx, g_B_mx, g_C_mx; 
-                float4 g_A_py, g_B_py, g_C_py; 
-                float4 g_A_my, g_B_my, g_C_my; 
-                float4 g_A_pz, g_B_pz, g_C_pz;  
-                float4 g_A_mz, g_B_mz, g_C_mz; 
+                // Calcula coordenadas de textura (uvw) para amostragem
+                float3 uvw = WorldToGridUV(pos_3D);
                 
-                GetMetricAt(pos_3D + float3(dx, 0, 0), g_A_px, g_B_px, g_C_px);
-                GetMetricAt(pos_3D - float3(dx, 0, 0), g_A_mx, g_B_mx, g_C_mx);
-                GetMetricAt(pos_3D + float3(0, dx, 0), g_A_py, g_B_py, g_C_py);
-                GetMetricAt(pos_3D - float3(0, dx, 0), g_A_my, g_B_my, g_C_my);
-                GetMetricAt(pos_3D + float3(0, 0, dx), g_A_pz, g_B_pz, g_C_pz);
-                GetMetricAt(pos_3D - float3(0, 0, dx), g_A_mz, g_B_mz, g_C_mz);
-                 
-                float dg_tt_dt = 0.0; 
-                float dg_tt_dx = (g_A_px.x - g_A_mx.x) / (2*dx);
-                float dg_tt_dy = (g_A_py.x - g_A_my.x) / (2*dx);
-                float dg_tt_dz = (g_A_pz.x - g_A_mz.x) / (2*dx);
-                 
-                float dg_xx_dt = 0.0;
-                float dg_xx_dx = (g_A_px.y - g_A_mx.y) / (2*dx);
-                float dg_xx_dy = (g_A_py.y - g_A_my.y) / (2*dx);
-                float dg_xx_dz = (g_A_pz.y - g_A_mz.y) / (2*dx);
-                 
-                float dg_yy_dt = 0.0;
-                float dg_yy_dx = (g_A_px.z - g_A_mx.z) / (2*dx);
-                float dg_yy_dy = (g_A_py.z - g_A_my.z) / (2*dx);
-                float dg_yy_dz = (g_A_pz.z - g_A_mz.z) / (2*dx);
-                 
-                float dg_zz_dt = 0.0;
-                float dg_zz_dx = (g_A_px.w - g_A_mx.w) / (2*dx);
-                float dg_zz_dy = (g_A_py.w - g_A_my.w) / (2*dx);
-                float dg_zz_dz = (g_A_pz.w - g_A_mz.w) / (2*dx);
-                 
-                float dg_tx_dx = (g_B_px.x - g_B_mx.x) / (2*dx);
-                float dg_tx_dy = (g_B_py.x - g_B_my.x) / (2*dx);
-                float dg_tx_dz = (g_B_pz.x - g_B_mz.x) / (2*dx);
+                // ========================================================================
+                // 1. Amostra as 10 texturas de Símbolos de Christoffel pré-calculados
+                // ========================================================================
+                float4 C1 = _Christoffel_1.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C2 = _Christoffel_2.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C3 = _Christoffel_3.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C4 = _Christoffel_4.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C5 = _Christoffel_5.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C6 = _Christoffel_6.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C7 = _Christoffel_7.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C8 = _Christoffel_8.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C9 = _Christoffel_9.SampleLevel(sampler_linear_clamp, uvw, 0);
+                float4 C10 = _Christoffel_10.SampleLevel(sampler_linear_clamp, uvw, 0);
                 
-                float dg_ty_dx = (g_B_px.y - g_B_mx.y) / (2*dx);
-                float dg_ty_dy = (g_B_py.y - g_B_my.y) / (2*dx);
-                float dg_ty_dz = (g_B_pz.y - g_B_mz.y) / (2*dx);
+                // ========================================================================
+                // 2. Desempacota os 40 componentes dos Símbolos de Christoffel
+                // ========================================================================
+                // Layout (deve corresponder ao usado no compute shader):
+                // C1:  Gamma_t_tt, Gamma_t_tx, Gamma_t_ty, Gamma_t_tz
+                // C2:  Gamma_t_xx, Gamma_t_xy, Gamma_t_xz, Gamma_t_yy
+                // C3:  Gamma_t_yz, Gamma_t_zz, Gamma_x_tt, Gamma_x_tx
+                // C4:  Gamma_x_ty, Gamma_x_tz, Gamma_x_xx, Gamma_x_xy
+                // C5:  Gamma_x_xz, Gamma_x_yy, Gamma_x_yz, Gamma_x_zz
+                // C6:  Gamma_y_tt, Gamma_y_tx, Gamma_y_ty, Gamma_y_tz
+                // C7:  Gamma_y_xx, Gamma_y_xy, Gamma_y_xz, Gamma_y_yy
+                // C8:  Gamma_y_yz, Gamma_y_zz, Gamma_z_tt, Gamma_z_tx
+                // C9:  Gamma_z_ty, Gamma_z_tz, Gamma_z_xx, Gamma_z_xy
+                // C10: Gamma_z_xz, Gamma_z_yy, Gamma_z_yz, Gamma_z_zz
                 
-                float dg_tz_dx = (g_B_px.z - g_B_mx.z) / (2*dx);
-                float dg_tz_dy = (g_B_py.z - g_B_my.z) / (2*dx);
-                float dg_tz_dz = (g_B_pz.z - g_B_mz.z) / (2*dx);
-                 
-                float det_spatial = g_xx * g_yy * g_zz; 
-                float g_inv_tt = 1.0 / g_tt;
-                float g_inv_xx = 1.0 / g_xx;
-                float g_inv_yy = 1.0 / g_yy;
-                float g_inv_zz = 1.0 / g_zz;
-                 
-                float Gamma_t_tt = 0.5 * g_inv_tt * (dg_tt_dt + dg_tt_dt - dg_tt_dt);
-                float Gamma_t_tx = 0.5 * g_inv_tt * (dg_tt_dx + dg_tx_dt - dg_tx_dt);
-                float Gamma_t_ty = 0.5 * g_inv_tt * (dg_tt_dy + dg_ty_dt - dg_ty_dt);
-                float Gamma_t_tz = 0.5 * g_inv_tt * (dg_tt_dz + dg_tz_dt - dg_tz_dt);
-                float Gamma_t_xx = 0.5 * g_inv_tt * (dg_tx_dx + dg_tx_dx - dg_xx_dt);
-                float Gamma_t_yy = 0.5 * g_inv_tt * (dg_ty_dy + dg_ty_dy - dg_yy_dt);
-                float Gamma_t_zz = 0.5 * g_inv_tt * (dg_tz_dz + dg_tz_dz - dg_zz_dt);
-                 
-                float Gamma_x_tt = 0.5 * g_inv_xx * (dg_tx_dt + dg_tx_dt - dg_tt_dx);
-                float Gamma_x_tx = 0.5 * g_inv_xx * (dg_tx_dx + dg_xx_dt - dg_tx_dx);
-                float Gamma_x_xx = 0.5 * g_inv_xx * (dg_xx_dx + dg_xx_dx - dg_xx_dx);
-                float Gamma_x_yy = 0.5 * g_inv_xx * (dg_xy_dy + dg_xy_dy - dg_yy_dx);
-                float Gamma_x_zz = 0.5 * g_inv_xx * (dg_xz_dz + dg_xz_dz - dg_zz_dx);
-                 
-                float Gamma_y_tt = 0.5 * g_inv_yy * (dg_ty_dt + dg_ty_dt - dg_tt_dy);
-                float Gamma_y_ty = 0.5 * g_inv_yy * (dg_ty_dy + dg_yy_dt - dg_ty_dy);
-                float Gamma_y_xx = 0.5 * g_inv_yy * (dg_xy_dx + dg_xy_dx - dg_xx_dy);
-                float Gamma_y_yy = 0.5 * g_inv_yy * (dg_yy_dy + dg_yy_dy - dg_yy_dy);
-                float Gamma_y_zz = 0.5 * g_inv_yy * (dg_yz_dz + dg_yz_dz - dg_zz_dy);
-                 
-                float Gamma_z_tt = 0.5 * g_inv_zz * (dg_tz_dt + dg_tz_dt - dg_tt_dz);
-                float Gamma_z_tz = 0.5 * g_inv_zz * (dg_tz_dz + dg_zz_dt - dg_tz_dz);
-                float Gamma_z_xx = 0.5 * g_inv_zz * (dg_xz_dx + dg_xz_dx - dg_xx_dz);
-                float Gamma_z_yy = 0.5 * g_inv_zz * (dg_yz_dy + dg_yz_dy - dg_yy_dz);
-                float Gamma_z_zz = 0.5 * g_inv_zz * (dg_zz_dz + dg_zz_dz - dg_zz_dz);
-                 
-                float dg_xy_dx = 0.0, dg_xy_dy = 0.0;
-                float dg_xz_dx = 0.0, dg_xz_dz = 0.0;
-                float dg_yz_dy = 0.0, dg_yz_dz = 0.0;
-                 
+                // Γ^t_νσ
+                float Gamma_t_tt = C1.x;
+                float Gamma_t_tx = C1.y;
+                float Gamma_t_ty = C1.z;
+                float Gamma_t_tz = C1.w;
+                float Gamma_t_xx = C2.x;
+                float Gamma_t_xy = C2.y;
+                float Gamma_t_xz = C2.z;
+                float Gamma_t_yy = C2.w;
+                float Gamma_t_yz = C3.x;
+                float Gamma_t_zz = C3.y;
+                
+                // Γ^x_νσ
+                float Gamma_x_tt = C3.z;
+                float Gamma_x_tx = C3.w;
+                float Gamma_x_ty = C4.x;
+                float Gamma_x_tz = C4.y;
+                float Gamma_x_xx = C4.z;
+                float Gamma_x_xy = C4.w;
+                float Gamma_x_xz = C5.x;
+                float Gamma_x_yy = C5.y;
+                float Gamma_x_yz = C5.z;
+                float Gamma_x_zz = C5.w;
+                
+                // Γ^y_νσ
+                float Gamma_y_tt = C6.x;
+                float Gamma_y_tx = C6.y;
+                float Gamma_y_ty = C6.z;
+                float Gamma_y_tz = C6.w;
+                float Gamma_y_xx = C7.x;
+                float Gamma_y_xy = C7.y;
+                float Gamma_y_xz = C7.z;
+                float Gamma_y_yy = C7.w;
+                float Gamma_y_yz = C8.x;
+                float Gamma_y_zz = C8.y;
+                
+                // Γ^z_νσ
+                float Gamma_z_tt = C8.z;
+                float Gamma_z_tx = C8.w;
+                float Gamma_z_ty = C9.x;
+                float Gamma_z_tz = C9.y;
+                float Gamma_z_xx = C9.z;
+                float Gamma_z_xy = C9.w;
+                float Gamma_z_xz = C10.x;
+                float Gamma_z_yy = C10.y;
+                float Gamma_z_yz = C10.z;
+                float Gamma_z_zz = C10.w;
+                
+                // ========================================================================
+                // 3. Calcula a aceleração geodésica usando a equação:
+                // a^μ = -Γ^μ_νσ v^ν v^σ
+                // ========================================================================
                 float v_t = vel_4D.x;
                 float v_x = vel_4D.y;
                 float v_y = vel_4D.z;
                 float v_z = vel_4D.w;
-                 
+                
+                // Aceleração temporal
                 float a_t = -(
                     Gamma_t_tt * v_t * v_t +
                     2.0 * Gamma_t_tx * v_t * v_x +
                     2.0 * Gamma_t_ty * v_t * v_y +
                     2.0 * Gamma_t_tz * v_t * v_z +
                     Gamma_t_xx * v_x * v_x +
+                    2.0 * Gamma_t_xy * v_x * v_y +
+                    2.0 * Gamma_t_xz * v_x * v_z +
                     Gamma_t_yy * v_y * v_y +
+                    2.0 * Gamma_t_yz * v_y * v_z +
                     Gamma_t_zz * v_z * v_z
                 );
-                 
+                
+                // Aceleração em x
                 float a_x = -(
                     Gamma_x_tt * v_t * v_t +
                     2.0 * Gamma_x_tx * v_t * v_x +
+                    2.0 * Gamma_x_ty * v_t * v_y +
+                    2.0 * Gamma_x_tz * v_t * v_z +
                     Gamma_x_xx * v_x * v_x +
+                    2.0 * Gamma_x_xy * v_x * v_y +
+                    2.0 * Gamma_x_xz * v_x * v_z +
                     Gamma_x_yy * v_y * v_y +
+                    2.0 * Gamma_x_yz * v_y * v_z +
                     Gamma_x_zz * v_z * v_z
                 );
-                 
+                
+                // Aceleração em y
                 float a_y = -(
                     Gamma_y_tt * v_t * v_t +
+                    2.0 * Gamma_y_tx * v_t * v_x +
                     2.0 * Gamma_y_ty * v_t * v_y +
+                    2.0 * Gamma_y_tz * v_t * v_z +
                     Gamma_y_xx * v_x * v_x +
+                    2.0 * Gamma_y_xy * v_x * v_y +
+                    2.0 * Gamma_y_xz * v_x * v_z +
                     Gamma_y_yy * v_y * v_y +
+                    2.0 * Gamma_y_yz * v_y * v_z +
                     Gamma_y_zz * v_z * v_z
                 );
-                 
+                
+                // Aceleração em z
                 float a_z = -(
                     Gamma_z_tt * v_t * v_t +
+                    2.0 * Gamma_z_tx * v_t * v_x +
+                    2.0 * Gamma_z_ty * v_t * v_y +
                     2.0 * Gamma_z_tz * v_t * v_z +
                     Gamma_z_xx * v_x * v_x +
+                    2.0 * Gamma_z_xy * v_x * v_y +
+                    2.0 * Gamma_z_xz * v_x * v_z +
                     Gamma_z_yy * v_y * v_y +
+                    2.0 * Gamma_z_yz * v_y * v_z +
                     Gamma_z_zz * v_z * v_z
                 );
                 
@@ -451,7 +471,6 @@ Shader "Custom/RayTracingRelativistic"
                 HitInfo missInfo;
                 missInfo.didHit = false;
                 return missInfo;
-            }
             }
  
             float3 CalculateDirectLighting(HitInfo hitInfo, float3 viewDir)

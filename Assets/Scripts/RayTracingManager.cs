@@ -76,9 +76,14 @@ public class RayTracingManager : MonoBehaviour
     RenderTexture geod_B_tex_A, geod_B_tex_B;
     RenderTexture geod_C_tex_A, geod_C_tex_B;
     
+    // Texturas para os Símbolos de Christoffel pré-calculados (40 componentes em 10 float4)
+    RenderTexture christoffel_tex_1, christoffel_tex_2, christoffel_tex_3, christoffel_tex_4, christoffel_tex_5;
+    RenderTexture christoffel_tex_6, christoffel_tex_7, christoffel_tex_8, christoffel_tex_9, christoffel_tex_10;
+    
     int kernelPaintMatter;
     int kernelSolveHamiltonian;
     int kernelInitializeGeometry;
+    int kernelCalculateChristoffel;
 
     List<Triangle> allTriangles;
     List<MeshInfo> allMeshInfo;
@@ -267,6 +272,18 @@ public class RayTracingManager : MonoBehaviour
             rayTracingMaterial.SetTexture("_GeodesicTable_B", geod_B_tex_A);
             rayTracingMaterial.SetTexture("_GeodesicTable_C", geod_C_tex_A);
             
+            // Passa as texturas de Símbolos de Christoffel para o shader
+            rayTracingMaterial.SetTexture("_Christoffel_1", christoffel_tex_1);
+            rayTracingMaterial.SetTexture("_Christoffel_2", christoffel_tex_2);
+            rayTracingMaterial.SetTexture("_Christoffel_3", christoffel_tex_3);
+            rayTracingMaterial.SetTexture("_Christoffel_4", christoffel_tex_4);
+            rayTracingMaterial.SetTexture("_Christoffel_5", christoffel_tex_5);
+            rayTracingMaterial.SetTexture("_Christoffel_6", christoffel_tex_6);
+            rayTracingMaterial.SetTexture("_Christoffel_7", christoffel_tex_7);
+            rayTracingMaterial.SetTexture("_Christoffel_8", christoffel_tex_8);
+            rayTracingMaterial.SetTexture("_Christoffel_9", christoffel_tex_9);
+            rayTracingMaterial.SetTexture("_Christoffel_10", christoffel_tex_10);
+            
             rayTracingMaterial.SetInt("_GridResolution", gridResolution);
             rayTracingMaterial.SetVector("_GridCenter", gridCenter);
             rayTracingMaterial.SetFloat("_GridSize", gridSize);
@@ -383,7 +400,19 @@ public class RayTracingManager : MonoBehaviour
         InitRenderTexture(ref matterGrid_tex, N);
         InitRenderTexture(ref geod_A_tex_A, N); InitRenderTexture(ref geod_A_tex_B, N);
         InitRenderTexture(ref geod_B_tex_A, N); InitRenderTexture(ref geod_B_tex_B, N);
-        InitRenderTexture(ref geod_C_tex_A, N); InitRenderTexture(ref geod_C_tex_B, N); 
+        InitRenderTexture(ref geod_C_tex_A, N); InitRenderTexture(ref geod_C_tex_B, N);
+        
+        // Inicializa texturas para os Símbolos de Christoffel
+        InitRenderTexture(ref christoffel_tex_1, N);
+        InitRenderTexture(ref christoffel_tex_2, N);
+        InitRenderTexture(ref christoffel_tex_3, N);
+        InitRenderTexture(ref christoffel_tex_4, N);
+        InitRenderTexture(ref christoffel_tex_5, N);
+        InitRenderTexture(ref christoffel_tex_6, N);
+        InitRenderTexture(ref christoffel_tex_7, N);
+        InitRenderTexture(ref christoffel_tex_8, N);
+        InitRenderTexture(ref christoffel_tex_9, N);
+        InitRenderTexture(ref christoffel_tex_10, N); 
  
         geodesicSolver.SetInt("_GridResolution", N);
         geodesicSolver.SetFloat("_GridSize", gridSize);
@@ -438,6 +467,35 @@ public class RayTracingManager : MonoBehaviour
             }
         }
         
+        // ========================================================================
+        // Calcula os Símbolos de Christoffel após convergir a métrica
+        // ========================================================================
+        Debug.Log("Calculando Símbolos de Christoffel...");
+        
+        kernelCalculateChristoffel = geodesicSolver.FindKernel("CalculateChristoffelSymbols");
+        
+        // Define as texturas de entrada (métrica final)
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_GeodesicTable_A_In", texA_In);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_GeodesicTable_B_In", texB_In);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_GeodesicTable_C_In", texC_In);
+        
+        // Define as texturas de saída para os Símbolos de Christoffel
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_1", christoffel_tex_1);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_2", christoffel_tex_2);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_3", christoffel_tex_3);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_4", christoffel_tex_4);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_5", christoffel_tex_5);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_6", christoffel_tex_6);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_7", christoffel_tex_7);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_8", christoffel_tex_8);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_9", christoffel_tex_9);
+        geodesicSolver.SetTexture(kernelCalculateChristoffel, "_Christoffel_Out_10", christoffel_tex_10);
+        
+        // Executa o kernel
+        geodesicSolver.Dispatch(kernelCalculateChristoffel, threadGroups, threadGroups, threadGroups);
+        
+        Debug.Log("Símbolos de Christoffel calculados com sucesso!");
+        
         float totalTime = Time.realtimeSinceStartup - startTime; 
     }
 
@@ -449,6 +507,18 @@ public class RayTracingManager : MonoBehaviour
         if (geod_A_tex_A != null) geod_A_tex_A.Release(); if (geod_A_tex_B != null) geod_A_tex_B.Release();
         if (geod_B_tex_A != null) geod_B_tex_A.Release(); if (geod_B_tex_B != null) geod_B_tex_B.Release();
         if (geod_C_tex_A != null) geod_C_tex_A.Release(); if (geod_C_tex_B != null) geod_C_tex_B.Release();
+        
+        // Libera texturas de Símbolos de Christoffel
+        if (christoffel_tex_1 != null) christoffel_tex_1.Release();
+        if (christoffel_tex_2 != null) christoffel_tex_2.Release();
+        if (christoffel_tex_3 != null) christoffel_tex_3.Release();
+        if (christoffel_tex_4 != null) christoffel_tex_4.Release();
+        if (christoffel_tex_5 != null) christoffel_tex_5.Release();
+        if (christoffel_tex_6 != null) christoffel_tex_6.Release();
+        if (christoffel_tex_7 != null) christoffel_tex_7.Release();
+        if (christoffel_tex_8 != null) christoffel_tex_8.Release();
+        if (christoffel_tex_9 != null) christoffel_tex_9.Release();
+        if (christoffel_tex_10 != null) christoffel_tex_10.Release();
     } 
 
     public void ToggleRelativisticView()
