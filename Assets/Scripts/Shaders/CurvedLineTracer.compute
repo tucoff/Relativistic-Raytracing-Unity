@@ -1,0 +1,284 @@
+#pragma kernel TraceCurvedLine
+
+struct LinePoint
+{
+    float3 position;
+    int shouldStop;
+};
+
+// Grid parameters
+int _GridResolution;
+float _GridSize;
+float3 _GridCenter;
+
+// Ray tracing parameters
+float3 _StartPosition;
+float3 _StartDirection;
+float _StepSize;
+int _MaxSteps;
+
+// Christoffel symbol textures
+Texture3D<float4> _Christoffel_1;
+Texture3D<float4> _Christoffel_2;
+Texture3D<float4> _Christoffel_3;
+Texture3D<float4> _Christoffel_4;
+Texture3D<float4> _Christoffel_5;
+Texture3D<float4> _Christoffel_6;
+Texture3D<float4> _Christoffel_7;
+Texture3D<float4> _Christoffel_8;
+Texture3D<float4> _Christoffel_9;
+Texture3D<float4> _Christoffel_10;
+
+// Metric textures
+Texture3D<float4> _GeodesicTable_A;
+Texture3D<float4> _GeodesicTable_B;
+Texture3D<float4> _GeodesicTable_C;
+
+RWStructuredBuffer<LinePoint> _LinePoints;
+
+SamplerState sampler_linear_clamp;
+
+float3 WorldToGridUV(float3 worldPos)
+{
+    float3 offset = worldPos - _GridCenter;
+    float3 normalized = (offset / _GridSize) + 0.5;
+    return saturate(normalized);
+}
+
+void GetMetricAt(float3 worldPos, out float4 g_A, out float4 g_B, out float4 g_C)
+{
+    float3 uvw = WorldToGridUV(worldPos);
+    g_A = _GeodesicTable_A.SampleLevel(sampler_linear_clamp, uvw, 0);
+    g_B = _GeodesicTable_B.SampleLevel(sampler_linear_clamp, uvw, 0);
+    g_C = _GeodesicTable_C.SampleLevel(sampler_linear_clamp, uvw, 0);
+}
+
+float4 CalculateGeodesicAcceleration(float4 pos_4D, float4 vel_4D)
+{
+    float3 pos_3D = pos_4D.yzw;
+    
+    float3 uvw = WorldToGridUV(pos_3D);
+    
+    // Sample Christoffel symbols
+    float4 C1 = _Christoffel_1.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C2 = _Christoffel_2.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C3 = _Christoffel_3.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C4 = _Christoffel_4.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C5 = _Christoffel_5.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C6 = _Christoffel_6.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C7 = _Christoffel_7.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C8 = _Christoffel_8.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C9 = _Christoffel_9.SampleLevel(sampler_linear_clamp, uvw, 0);
+    float4 C10 = _Christoffel_10.SampleLevel(sampler_linear_clamp, uvw, 0);
+    
+    // Unpack Christoffel symbols
+    float Gamma_t_tt = C1.x;
+    float Gamma_t_tx = C1.y;
+    float Gamma_t_ty = C1.z;
+    float Gamma_t_tz = C1.w;
+    float Gamma_t_xx = C2.x;
+    float Gamma_t_xy = C2.y;
+    float Gamma_t_xz = C2.z;
+    float Gamma_t_yy = C2.w;
+    float Gamma_t_yz = C3.x;
+    float Gamma_t_zz = C3.y;
+    
+    float Gamma_x_tt = C3.z;
+    float Gamma_x_tx = C3.w;
+    float Gamma_x_ty = C4.x;
+    float Gamma_x_tz = C4.y;
+    float Gamma_x_xx = C4.z;
+    float Gamma_x_xy = C4.w;
+    float Gamma_x_xz = C5.x;
+    float Gamma_x_yy = C5.y;
+    float Gamma_x_yz = C5.z;
+    float Gamma_x_zz = C5.w;
+    
+    float Gamma_y_tt = C6.x;
+    float Gamma_y_tx = C6.y;
+    float Gamma_y_ty = C6.z;
+    float Gamma_y_tz = C6.w;
+    float Gamma_y_xx = C7.x;
+    float Gamma_y_xy = C7.y;
+    float Gamma_y_xz = C7.z;
+    float Gamma_y_yy = C7.w;
+    float Gamma_y_yz = C8.x;
+    float Gamma_y_zz = C8.y;
+    
+    float Gamma_z_tt = C8.z;
+    float Gamma_z_tx = C8.w;
+    float Gamma_z_ty = C9.x;
+    float Gamma_z_tz = C9.y;
+    float Gamma_z_xx = C9.z;
+    float Gamma_z_xy = C9.w;
+    float Gamma_z_xz = C10.x;
+    float Gamma_z_yy = C10.y;
+    float Gamma_z_yz = C10.z;
+    float Gamma_z_zz = C10.w;
+    
+    float v_t = vel_4D.x;
+    float v_x = vel_4D.y;
+    float v_y = vel_4D.z;
+    float v_z = vel_4D.w;
+    
+    // Calculate geodesic acceleration
+    float a_t = -(
+        Gamma_t_tt * v_t * v_t +
+        2.0 * Gamma_t_tx * v_t * v_x +
+        2.0 * Gamma_t_ty * v_t * v_y +
+        2.0 * Gamma_t_tz * v_t * v_z +
+        Gamma_t_xx * v_x * v_x +
+        2.0 * Gamma_t_xy * v_x * v_y +
+        2.0 * Gamma_t_xz * v_x * v_z +
+        Gamma_t_yy * v_y * v_y +
+        2.0 * Gamma_t_yz * v_y * v_z +
+        Gamma_t_zz * v_z * v_z
+    );
+    
+    float a_x = -(
+        Gamma_x_tt * v_t * v_t +
+        2.0 * Gamma_x_tx * v_t * v_x +
+        2.0 * Gamma_x_ty * v_t * v_y +
+        2.0 * Gamma_x_tz * v_t * v_z +
+        Gamma_x_xx * v_x * v_x +
+        2.0 * Gamma_x_xy * v_x * v_y +
+        2.0 * Gamma_x_xz * v_x * v_z +
+        Gamma_x_yy * v_y * v_y +
+        2.0 * Gamma_x_yz * v_y * v_z +
+        Gamma_x_zz * v_z * v_z
+    );
+    
+    float a_y = -(
+        Gamma_y_tt * v_t * v_t +
+        2.0 * Gamma_y_tx * v_t * v_x +
+        2.0 * Gamma_y_ty * v_t * v_y +
+        2.0 * Gamma_y_tz * v_t * v_z +
+        Gamma_y_xx * v_x * v_x +
+        2.0 * Gamma_y_xy * v_x * v_y +
+        2.0 * Gamma_y_xz * v_x * v_z +
+        Gamma_y_yy * v_y * v_y +
+        2.0 * Gamma_y_yz * v_y * v_z +
+        Gamma_y_zz * v_z * v_z
+    );
+    
+    float a_z = -(
+        Gamma_z_tt * v_t * v_t +
+        2.0 * Gamma_z_tx * v_t * v_x +
+        2.0 * Gamma_z_ty * v_t * v_y +
+        2.0 * Gamma_z_tz * v_t * v_z +
+        Gamma_z_xx * v_x * v_x +
+        2.0 * Gamma_z_xy * v_x * v_y +
+        2.0 * Gamma_z_xz * v_x * v_z +
+        Gamma_z_yy * v_y * v_y +
+        2.0 * Gamma_z_yz * v_y * v_z +
+        Gamma_z_zz * v_z * v_z
+    );
+    
+    return float4(a_t, a_x, a_y, a_z);
+}
+
+[numthreads(1,1,1)]
+void TraceCurvedLine(uint3 id : SV_DispatchThreadID)
+{
+    // Initialize 4D position and velocity
+    float4 currentPosition4D = float4(0, _StartPosition.x, _StartPosition.y, _StartPosition.z);
+    
+    // Get metric at camera position to calculate initial v_t
+    float4 g_A_cam, g_B_cam, g_C_cam;
+    GetMetricAt(_StartPosition, g_A_cam, g_B_cam, g_C_cam);
+    
+    float g_tt = g_A_cam.x;
+    float g_xx = g_A_cam.y;
+    float g_yy = g_A_cam.z;
+    float g_zz = g_A_cam.w;
+    float g_tx = g_B_cam.x;
+    float g_ty = g_B_cam.y;
+    float g_tz = g_B_cam.z;
+    float g_xy = g_B_cam.w;
+    float g_xz = g_C_cam.x;
+    float g_yz = g_C_cam.y;
+    
+    float3 v_spatial = normalize(_StartDirection);
+    float v_x = v_spatial.x;
+    float v_y = v_spatial.y;
+    float v_z = v_spatial.z;
+    
+    float A = g_tt;
+    float B = 2.0 * (g_tx * v_x + g_ty * v_y + g_tz * v_z);
+    float C = g_xx * v_x * v_x + g_yy * v_y * v_y + g_zz * v_z * v_z
+            + 2.0 * (g_xy * v_x * v_y + g_xz * v_x * v_z + g_yz * v_y * v_z);
+    
+    float discriminant = B * B - 4.0 * A * C;
+    float v_t = 1.0;
+    
+    if (discriminant >= 0.0 && abs(A) > 1e-6)
+    {
+        v_t = (-B + sqrt(discriminant)) / (2.0 * A);
+    }
+    
+    float4 currentVelocity4D = float4(v_t, v_x, v_y, v_z);
+    
+    // Store first point
+    _LinePoints[0].position = currentPosition4D.yzw;
+    _LinePoints[0].shouldStop = 0;
+    
+    // Integrate geodesic using RK4
+    for (uint step = 0; step < (uint)(_MaxSteps - 1); step++)
+    {
+        float h = _StepSize;
+        
+        // RK4 integration
+        float4 k1_v = CalculateGeodesicAcceleration(currentPosition4D, currentVelocity4D);
+        float4 k1_x = currentVelocity4D;
+        
+        float4 pos_k2 = currentPosition4D + k1_x * (h * 0.5);
+        float4 vel_k2 = currentVelocity4D + k1_v * (h * 0.5);
+        float4 k2_v = CalculateGeodesicAcceleration(pos_k2, vel_k2);
+        float4 k2_x = vel_k2;
+        
+        float4 pos_k3 = currentPosition4D + k2_x * (h * 0.5);
+        float4 vel_k3 = currentVelocity4D + k2_v * (h * 0.5);
+        float4 k3_v = CalculateGeodesicAcceleration(pos_k3, vel_k3);
+        float4 k3_x = vel_k3;
+        
+        float4 pos_k4 = currentPosition4D + k3_x * h;
+        float4 vel_k4 = currentVelocity4D + k3_v * h;
+        float4 k4_v = CalculateGeodesicAcceleration(pos_k4, vel_k4);
+        float4 k4_x = vel_k4;
+        
+        float4 deltaVelocity = (k1_v + 2.0 * k2_v + 2.0 * k3_v + k4_v) / 6.0;
+        float4 deltaPosition = (k1_x + 2.0 * k2_x + 2.0 * k3_x + k4_x) / 6.0;
+        
+        currentVelocity4D += deltaVelocity * h;
+        currentPosition4D += deltaPosition * h;
+        
+        // Renormalize velocity every 10 steps
+        if (step % 10u == 0u)
+        {
+            float4 g_A_curr, g_B_curr, g_C_curr;
+            GetMetricAt(currentPosition4D.yzw, g_A_curr, g_B_curr, g_C_curr);
+            
+            float3 v_spatial_curr = currentVelocity4D.yzw;
+            float v_x_curr = v_spatial_curr.x;
+            float v_y_curr = v_spatial_curr.y;
+            float v_z_curr = v_spatial_curr.z;
+            
+            float A_curr = g_A_curr.x;
+            float B_curr = 2.0 * (g_B_curr.x * v_x_curr + g_B_curr.y * v_y_curr + g_B_curr.z * v_z_curr);
+            float C_curr = g_A_curr.y * v_x_curr * v_x_curr + g_A_curr.z * v_y_curr * v_y_curr + g_A_curr.w * v_z_curr * v_z_curr
+                         + 2.0 * (g_B_curr.w * v_x_curr * v_y_curr + g_C_curr.x * v_x_curr * v_z_curr + g_C_curr.y * v_y_curr * v_z_curr);
+            
+            float disc_curr = B_curr * B_curr - 4.0 * A_curr * C_curr;
+            
+            if (disc_curr >= 0.0 && abs(A_curr) > 1e-6)
+            {
+                float v_t_new = (-B_curr + sqrt(disc_curr)) / (2.0 * A_curr);
+                currentVelocity4D.x = v_t_new;
+            }
+        }
+        
+        // Store point
+        _LinePoints[step + 1].position = currentPosition4D.yzw;
+        _LinePoints[step + 1].shouldStop = 0;
+    }
+}

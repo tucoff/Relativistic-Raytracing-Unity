@@ -3,6 +3,20 @@
 #pragma kernel SolveHamiltonian
 #pragma kernel CalculateChristoffelSymbols
  
+// ============================================================================
+// CONSTANTES FÍSICAS (Unidades SI)
+// ============================================================================
+// G = Constante gravitacional [m³/(kg·s²)]
+// c = Velocidade da luz [m/s]
+// PI = Pi
+//
+// IMPORTANTE SOBRE UNIDADES:
+// - As massas das esferas devem ser GIGANTESCAS (≥ 1e24 kg) para que o termo
+//   8πG/(c⁴) não seja eliminado pela precisão do float.
+// - O vetor direção nos ray tracers é normalizado (magnitude 1).
+// - A densidade de energia ρH tem unidades de [kg/(m·s²)] = [J/m³]
+// - Todos os cálculos usam c = 2.998e8 m/s consistentemente.
+// ============================================================================
 #define G 6.67430e-11
 #define c 2.998e8
 #define PI 3.1415926535
@@ -145,12 +159,19 @@ float Calculate_Ricci_Scalar_R3(int3 id)
     return R;
 }
   
+// ============================================================================
+// INICIALIZAÇÃO: Métrica de Minkowski
+// ============================================================================
+// Inicializa toda a grade com a métrica de Minkowski (espaço-tempo plano):
+// η_μν = diag(-1, 1, 1, 1)
+// Isso garante que longe das massas (nas bordas), a métrica é a de Minkowski.
+// ============================================================================
 [numthreads(8,8,8)]
 void InitializeGeometry (uint3 id : SV_DispatchThreadID)
 { 
-    _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1); 
-    _GeodesicTable_B_Out[id] = float4(0, 0, 0, 0);  
-    _GeodesicTable_C_Out[id] = float4(0, 0, 0, 0);  
+    _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1);  // (g_tt, g_xx, g_yy, g_zz) = (-1, 1, 1, 1)
+    _GeodesicTable_B_Out[id] = float4(0, 0, 0, 0);   // (g_tx, g_ty, g_tz, g_xy) = (0, 0, 0, 0)
+    _GeodesicTable_C_Out[id] = float4(0, 0, 0, 0);   // (g_xz, g_yz, 0, 0) = (0, 0, 0, 0)
 }
 
 [numthreads(8,8,8)] 
@@ -198,9 +219,20 @@ void PaintMatter (uint3 id : SV_DispatchThreadID)
     _MatterGrid[id] = float4(densidade_rho_H, densidade_S.x, densidade_S.y, densidade_S.z);
 }
   
+// ============================================================================
+// SOLVER HAMILTONIANO: Resolve as Equações de Einstein Simplificadas
+// ============================================================================
+// Usa um solver iterativo tipo Gauss-Seidel/Jacobi para convergir a métrica
+// para satisfazer R = (16πG/c⁴)ρH, onde R é o escalar de Ricci.
+//
+// CONDIÇÕES DE CONTORNO:
+// Nas bordas da grade, a métrica é forçada para Minkowski η_μν = diag(-1,1,1,1).
+// Isso garante que longe das fontes de massa, a métrica relaxa para o espaço-tempo plano.
+// ============================================================================
 [numthreads(8,8,8)]
 void SolveHamiltonian (uint3 id : SV_DispatchThreadID)
 { 
+    // Condições de contorno: Força Minkowski nas bordas
     if (any(id < 1) || any(id >= _GridResolution - 1))
     { 
         _GeodesicTable_A_Out[id] = float4(-1, 1, 1, 1);
@@ -245,7 +277,13 @@ void SolveHamiltonian (uint3 id : SV_DispatchThreadID)
         GetMetric_A(id + int3(0,0,1)) + GetMetric_A(id - int3(0,0,1))
     ) / 6.0;
      
-    g_A.x = -1.0; 
+    // LIBERA gtt (g_A.x) para variar com a densidade de matéria
+    // A componente temporal da métrica deve responder à curvatura induzida pela massa/energia
+    // Aproximação: gtt ≈ -1 + 2*phi/c^2, onde phi é o potencial gravitacional newtoniano
+    // Para densidades altas, gtt se afasta de -1, capturando a dilatação temporal
+    float phi_approx = -G * rho_H / (c * c);  // potencial gravitacional aproximado
+    g_A.x = lerp(g_A.x, g_A_avg.x, 0.3) - taxa_de_ajuste * Erro;
+    g_A.x = clamp(g_A.x, -10.0, -0.1);  // Mantém negativo (tipo tempo) mas permite variação
      
     g_A.y = lerp(g_A.y, g_A_avg.y, 0.3) - taxa_de_ajuste * Erro; 
     g_A.z = lerp(g_A.z, g_A_avg.z, 0.3) - taxa_de_ajuste * Erro; 
