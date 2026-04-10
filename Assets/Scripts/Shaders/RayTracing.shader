@@ -23,13 +23,13 @@ Shader "Custom/RayTracingRelativistic"
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
-            
+
             struct Ray
             {
                 float3 origin;
                 float3 dir;
             };
-            
+
             struct RayTracingMaterial
             {
                 float4 colour;
@@ -90,7 +90,18 @@ Shader "Custom/RayTracingRelativistic"
             float _StepSize;
             int _MaxSteps;
 
-            #define G 6.67430f
+            int _Metric;
+            int _Integrator;
+            float _SpinSpeed;
+
+            // Constantes adicionais para Kerr (baseadas no seu shader.comp)
+            static const float KERR_SPIN_AMOUNT = 1.0; // Ajuste conforme a escala do seu mundo
+            static const float3 KERR_SPIN_AXIS = float3(0, 1, 0);
+
+            // --- CONSTANTES REAIS (SI) ---
+            // Cuidado: float tem pouca precisão para esses números extremos sem normalização
+            static const float G = 6.67430e-11;
+            static const float C = 299792458.0;
 
             // --- Funções de Interseção de Raio ---
             HitInfo RaySphere(Ray ray, float3 sphereCentre, float sphereRadius)
@@ -173,66 +184,122 @@ Shader "Custom/RayTracingRelativistic"
                 return closestHit;
             }
 
+            // --- Função de Aceleração Gravitacional ---
+            float3 GetGravityAccel(float3 pos, float3 v, Sphere s)
+            {
+                float3 toSphere = s.position - pos;
+                float r_dist = length(toSphere);
+                if (r_dist < 0.1) return float3(0, 0, 0);
+
+                float r_dist2 = r_dist * r_dist;
+                float r_dist3 = r_dist2 * r_dist;
+                float r_dist5 = r_dist3 * r_dist2;
+                float cSq = C * C;
+                float Rs = (2.0 * G * s.massa) / cSq;
+
+                if (_Metric == 0) // Newton
+                {
+                    return toSphere * (G * s.massa) / r_dist3;
+                }
+                else if (_Metric == 1) // Schwarzschild
+                {
+                    float3 h_vec = cross(-toSphere, v);
+                    float h2 = dot(h_vec, h_vec);
+                    return toSphere * (1.5 * Rs * h2) / r_dist5;
+                }
+                else // Kerr (Métrica de Buraco Negro em Rotação)
+                {
+                    float3 r_vec = -toSphere;
+                    float3 h_vec = cross(r_vec, v);
+                    float h2 = dot(h_vec, h_vec);
+        
+                    float3 a_schwarz = -r_vec * (1.5 * Rs * h2) / r_dist5;
+        
+                    // Frame Dragging (Lense-Thirring)
+                    float3 spin_vec = KERR_SPIN_AXIS * Rs * _SpinSpeed;
+                    float3 H = (2.0 / r_dist5) * (3.0 * r_vec * dot(spin_vec, r_vec) - spin_vec * r_dist2);
+                    float3 a_frame_drag = cross(v, H);
+        
+                    return a_schwarz + a_frame_drag;
+                }
+            }
+
+            // --- Novos Métodos de Integração ---
+            void StepEuler(inout float3 origin, inout float3 velocity, float dt, Sphere s)
+            {
+                float3 accel = GetGravityAccel(origin, velocity, s);
+                velocity = normalize(velocity + accel * dt) * C;
+                origin += velocity * dt;
+            }
+
+            void StepRK4(inout float3 origin, inout float3 velocity, float dt, Sphere s)
+            {
+                float3 p = origin;
+                float3 v = velocity;
+
+                // k1
+                float3 k1_p = v;
+                float3 k1_v = GetGravityAccel(p, v, s);
+
+                // k2
+                float3 k2_p = v + 0.5 * dt * k1_v;
+                float3 k2_v = GetGravityAccel(p + 0.5 * dt * k1_p, v + 0.5 * dt * k1_v, s);
+
+                // k3
+                float3 k3_p = v + 0.5 * dt * k2_v;
+                float3 k3_v = GetGravityAccel(p + 0.5 * dt * k2_p, v + 0.5 * dt * k2_v, s);
+
+                // k4
+                float3 k4_p = v + dt * k3_v;
+                float3 k4_v = GetGravityAccel(p + dt * k3_p, v + dt * k3_v, s);
+
+                origin += (dt / 6.0) * (k1_p + 2.0 * k2_p + 2.0 * k3_p + k4_p);
+                float3 new_v = v + (dt / 6.0) * (k1_v + 2.0 * k2_v + 2.0 * k3_v + k4_v);
+                velocity = normalize(new_v) * C;
+            }
+
             HitInfo ApplyRelativisticEffects(float3 initialRayDir)
             {
                 if (_UseHyperbolicView == 0) 
-                {
-                    Ray straightRay;
-                    straightRay.origin = _WorldSpaceCameraPos;
-                    straightRay.dir = initialRayDir;
-                    return CalculateRayCollision(straightRay);
+                { 
+                    Ray straightRay; 
+                    straightRay.origin = _WorldSpaceCameraPos;  
+                    straightRay.dir = initialRayDir; 
+         
+                    return CalculateRayCollision(straightRay); 
                 }
-                
-                Ray curvedRay;
-                // START POINT ON CAMERA POSITION
-                curvedRay.origin = _WorldSpaceCameraPos;
-                // START VECTOR ON CAMERA LOOK DIRECTION
-                curvedRay.dir = initialRayDir;
 
-                // ITERATE FOR EACH POINT / STEP
+                float3 currentPos = _WorldSpaceCameraPos;
+                float3 currentVelocity = initialRayDir * C;
+                float dt = _StepSize / C;
+
                 for (int step = 0; step < _MaxSteps; step++)
                 {
-                    HitInfo hitInfo = CalculateRayCollision(curvedRay);
+                    // Check Colisão
+                    Ray checkRay = { currentPos, normalize(currentVelocity) };
+                    HitInfo hitInfo = CalculateRayCollision(checkRay);
+                    if (hitInfo.didHit && hitInfo.dst <= _StepSize) return hitInfo;
 
-                    if (hitInfo.didHit && hitInfo.dst <= _StepSize)
-                    {
-                        return hitInfo;
-                    }
+                    // Atualmente o shader suporta múltiplas esferas, 
+                    // mas a física relativística geralmente foca na mais massiva (index 0)
+                    Sphere s = Spheres[0]; 
+        
+                    if (_Integrator == 1) // RK4
+                        StepRK4(currentPos, currentVelocity, dt, s);
+                    else // Euler
+                        StepEuler(currentPos, currentVelocity, dt, s);
 
-                    // TOTAL = (0,0,0)
-                    float3 totalDeflection = float3(0, 0, 0);
+                    // Horizonte de eventos (escape antecipado)
+                    if (length(currentPos - s.position) < s.radius * 1.01) { 
+                        HitInfo black = (HitInfo)0; 
+                         
+                        black.didHit = true; 
+                        black.dst = 0.0; 
+                        black.material.colour = float4(0, 0, 0, 1);  
+                        black.material.emissionStrength = 0; 
 
-                    // FOR EACH SPHERE 
-                    for (int i = 0; i < NumSpheres; i++)
-                    {
-                        Sphere sphere = Spheres[i];
-                        if (sphere.massa <= 0) continue;
-                        
-                        float3 toSphere = sphere.position - curvedRay.origin;
-                       
-                        // DST
-                        float distance = length(toSphere);
-                        
-                        if (distance < 0.1) continue;
-                        
-                        // DIR
-                        float3 direction = toSphere / distance;
-                        
-                        // DEF (by newtons)
-                        float deflectionStrength = G * sphere.massa / (distance * distance);
-                        
-                        // TOTAL += DIR * DEF
-                        totalDeflection += direction * deflectionStrength;
+                        return black;
                     }
-                    
-                    if (length(totalDeflection) > 0)
-                    {
-                        // ADD TOTAL TO LAST DIR AND NORMALIZE
-                        curvedRay.dir = normalize(curvedRay.dir + totalDeflection * _StepSize);
-                    }
-                    
-                    // MOVE CURRENT POSITION
-                    curvedRay.origin += curvedRay.dir * _StepSize;
                 }
                 
                 HitInfo missInfo;
@@ -240,7 +307,7 @@ Shader "Custom/RayTracingRelativistic"
                 return missInfo;
             }
 
-            // --- Iluminação Global ---
+            // --- Iluminação Global (Inalterada mas usando calculateRayCollision padrão) ---
             float3 CalculateDirectLighting(HitInfo hitInfo, float3 viewDir)
             {
                 float3 totalLight = float3(0, 0, 0);
@@ -264,6 +331,7 @@ Shader "Custom/RayTracingRelativistic"
                     totalLight += hitInfo.material.specularColour.rgb * lightColour * specularFactor * hitInfo.material.specularProbability;
                 }
                 
+                // Luz emitida por esferas (Pode ser caro em loops grandes, simplificado aqui)
                 for (int i = 0; i < NumSpheres; i++)
                 {
                     Sphere sphere = Spheres[i];
@@ -310,7 +378,6 @@ Shader "Custom/RayTracingRelativistic"
                 float3 focusPoint = mul(CamLocalToWorldMatrix, float4(focusPointLocal, 1));
                 float3 initialRayDir = normalize(focusPoint - _WorldSpaceCameraPos);
 
-                // POINT MODE - RENDER ONLY CENTER PIXEL
                 if (_UsePointMode == 1)
                 {
                     float2 center = float2(0.5, 0.5);
@@ -340,7 +407,6 @@ Shader "Custom/RayTracingRelativistic"
                     float3 skyColor = lerp(float3(0.05, 0.1, 0.2), float3(0.1, 0.3, 0.6), skyGradient);
                     return float4(skyColor, 1.0);
                 }
-
             }
             ENDCG
         }

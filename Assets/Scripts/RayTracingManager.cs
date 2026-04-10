@@ -224,7 +224,15 @@ public class RayTracingManager : MonoBehaviour
         CreateMeshes();
         SetShaderParams();
     }
-
+     
+    public enum Metric { Newton = 0, Schwarzschild = 1, Kerr = 2 }
+    public enum Integrator { Euler = 0, RK4 = 1 }
+     
+    [Header("Relativistic Physics")]
+    public Metric selectedMetric = Metric.Schwarzschild;
+    public Integrator selectedIntegrator = Integrator.Euler;
+    [SerializeField] float spinSpeed = 0.5f;
+     
     void SetShaderParams()
     {
         rayTracingMaterial.SetVector("_LightDirection", lightDirection.normalized);
@@ -233,6 +241,10 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_UsePointMode", usePointMode ? 1 : 0);
         rayTracingMaterial.SetFloat("_StepSize", stepSize);
         rayTracingMaterial.SetInt("_MaxSteps", maxSteps);
+         
+        rayTracingMaterial.SetInt("_Metric", (int)selectedMetric);
+        rayTracingMaterial.SetInt("_Integrator", (int)selectedIntegrator);
+        rayTracingMaterial.SetFloat("_SpinSpeed", spinSpeed);
     }
 
     void UpdateCameraParams(Camera cam)

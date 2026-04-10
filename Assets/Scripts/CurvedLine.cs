@@ -1,141 +1,154 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class CurvedLineGenerator : MonoBehaviour
+
+public class CurvedLine : MonoBehaviour
 {
-    private LineRenderer lineRenderer;
+
+    private LineRenderer lineRenderer;     
     private RayTracingManager rayTracingManager;
     private int numPoints;
-    public float gravitationalConstant = 6.67430f; 
-    public Transform targetCameraTransform; 
+
+    [Header("General Relativity Settings")]
+    public float gravitationalConstant = 6.67430e-11f; // G
+    public float speedOfLight = 299792458.0f; // c (Ajuste isso para ver mais/menos curvatura na escala do jogo)
+
+    public Transform targetCameraTransform;
     private RayTracedSphere[] massiveSpheres;
 
     void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
+
         if (lineRenderer == null)
         {
             Debug.LogError("Line Renderer component not found!");
             return;
         }
-        
-        // Find the RayTracingManager in the scene
+
         rayTracingManager = FindFirstObjectByType<RayTracingManager>();
+
         if (rayTracingManager == null)
         {
-            Debug.LogError("RayTracingManager not found! CurvedLineGenerator requires RayTracingManager to get step parameters.");
+            Debug.LogError("RayTracingManager not found!");
         }
-        
+
         UpdateMassiveSpheres();
         UpdateParametersFromRayTracingManager();
     }
-    
+
     void UpdateMassiveSpheres()
     {
         massiveSpheres = FindObjectsByType<RayTracedSphere>(FindObjectsSortMode.None);
     }
 
+
     void UpdateParametersFromRayTracingManager()
     {
         if (rayTracingManager == null) return;
-
         int newMaxSteps = rayTracingManager.GetMaxSteps();
-        float newStepSize = rayTracingManager.GetStepSize();
-        
-        numPoints = newMaxSteps;
-        
-        numPoints = Mathf.Max(2, numPoints);
+        numPoints = Mathf.Max(2, newMaxSteps);
     }
 
-    Vector3 CalculateGravitationalDeflection(Vector3 rayPosition, float stepSize)
-    {
 
-        // TOTAL = (0,0,0)
-        Vector3 totalDeflection = Vector3.zero;
-        
-        if (massiveSpheres == null) return totalDeflection;
-        
-        // FOR EACH SPHERE
+    // Calcula a aceleração geodésica baseada na Métrica de Schwarzschild
+    Vector3 CalculateGeodesicAcceleration(Vector3 currentPos, Vector3 currentVel)
+    {
+        Vector3 totalAcceleration = Vector3.zero;
+
+        if (massiveSpheres == null) return totalAcceleration;
+
+        float cSq = speedOfLight * speedOfLight; // c^2
+
         foreach (RayTracedSphere sphere in massiveSpheres)
         {
             if (sphere == null || sphere.massa <= 0) continue;
 
-            Vector3 spherePos = sphere.transform.position;
+            // Vetor r: Do centro da massa até o fóton (na física, r aponta radialmente para fora)
+            Vector3 r_vec = currentPos - sphere.transform.position;
+            float r_dist = r_vec.magnitude;
 
-            Vector3 toSphere = spherePos - rayPosition;
+            // Evitar singularidade (divisão por zero no centro)
+            if (r_dist < 0.1f) continue;
 
-            // DST 
-            float distance = toSphere.magnitude;
+            // 1. Calcular Raio de Schwarzschild (Rs = 2GM / c^2)
+            // Rs define o horizonte de eventos.
+            float Rs = (2.0f * gravitationalConstant * sphere.massa) / cSq;
 
-            if (distance < 0.1f) continue;
+            // 2. Calcular Momento Angular Específico (h = r x v)
+            Vector3 h_vec = Vector3.Cross(r_vec, currentVel);
+            float h2 = h_vec.sqrMagnitude; // |h|^2
 
-            // DIR
-            Vector3 direction = toSphere / distance;
+            // 3. Fórmula da Aceleração Geodésica de Schwarzschild (Simplificada para coordenadas cartesianas)
+            // Aceleração = - (3/2) * Rs * (h^2 / r^5) * r_vec
+            // O termo negativo indica atração (contra o vetor r que aponta para fora)
+            float magnitudeFactor = 1.5f * Rs * (h2 / Mathf.Pow(r_dist, 5));
+            Vector3 acceleration = -magnitudeFactor * r_vec;
 
-            // DEF (by newtons)
-            float deflectionStrength = gravitationalConstant * sphere.massa / (distance * distance);
-
-            // TOTAL += DIR * DEF
-            totalDeflection += direction * deflectionStrength;
+            totalAcceleration += acceleration;
         }
-        
-        if (totalDeflection.magnitude > 0)
-        {
-            return totalDeflection * stepSize;
-        }
-        
-        return Vector3.zero;
+
+        return totalAcceleration;
     }
 
     void Update()
     {
         if (targetCameraTransform == null) return;
 
-        // Update parameters from RayTracingManager each frame in case they changed
         UpdateParametersFromRayTracingManager();
-
         Vector3[] points = new Vector3[numPoints];
         lineRenderer.positionCount = numPoints;
 
-        // START POINT ON CAMERA POSITION
+        // Estado inicial
         Vector3 currentPosition = targetCameraTransform.position;
-        // START VECTOR ON CAMERA LOOK DIRECTION
-        Vector3 currentDirection = targetCameraTransform.forward;
-        
+
+        // A direção agora é um vetor velocidade com magnitude 'c'
+        Vector3 currentVelocity = targetCameraTransform.forward * speedOfLight;
         points[0] = currentPosition;
 
-        // STEP SIZE 
-        float stepSize = rayTracingManager.GetStepSize(); // Use exact same stepSize as shader
+        // Passo de tempo (dt) derivado do stepSize espacial
+        // Se dx = v * dt => dt = dx / v
+        float stepSize = rayTracingManager.GetStepSize();
+        float dt = stepSize / speedOfLight;
 
-        // ITERATE FOR EACH POINT / STEP
         for (int i = 1; i < numPoints; i++)
         {
+            // Checagem de colisão (Raycast padrão para terminar a linha se bater em algo)
             RaycastHit hit;
-        
-            if (Physics.Raycast(currentPosition, currentDirection, out hit, stepSize))
+
+            if (Physics.Raycast(currentPosition, currentVelocity.normalized, out hit, stepSize))
             {
                 points[i] = hit.point;
-                break; 
+                // Preenche o resto da linha no ponto de impacto para não ficar piscando
+                for(int j = i + 1; j < numPoints; j++) points[j] = hit.point;
+                break;
             }
 
-            Vector3 gravitationalDeflection = CalculateGravitationalDeflection(currentPosition, stepSize);
+            // --- INTEGRAÇÃO NUMÉRICA (Método de Euler Semi-Implícito ou Velocity Verlet simplificado) ---
+            // 1. Calcular a aceleração baseada na curvatura do espaço-tempo na posição atual
+            Vector3 acceleration = CalculateGeodesicAcceleration(currentPosition, currentVelocity);
 
-            // ADD TOTAL TO LAST DIR AND NORMALIZE
-            currentDirection += gravitationalDeflection;
-            currentDirection = currentDirection.normalized;
+            // 2. Atualizar velocidade (curvatura da luz)
+            currentVelocity += acceleration * dt;
 
-            // MOVE CURRENT POSITION
-            currentPosition += currentDirection * stepSize;
+            // Nota: Na Relatividade Geral pura, a velocidade da luz é sempre 'c' localmente.
+            // A "aceleração" aqui muda a direção. Podemos renormalizar para manter a estabilidade numérica,
+            // embora a equação de Schwarzschild já conserve energia orbital naturalmente.
+            currentVelocity = currentVelocity.normalized * speedOfLight;
 
+
+            // 3. Atualizar posição
+            currentPosition += currentVelocity * dt;
             points[i] = currentPosition;
         }
 
         lineRenderer.SetPositions(points);
     }
-    
+
     public void RefreshMassiveSpheres()
     {
         UpdateMassiveSpheres();
         UpdateParametersFromRayTracingManager();
     }
-}
+
+} 
