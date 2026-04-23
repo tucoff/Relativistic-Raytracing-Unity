@@ -45,10 +45,18 @@ public class RayTracingManager : MonoBehaviour
 
     // Materials and render textures
     Material rayTracingMaterial;
+    
+    // Cached values for optimization
+    private Camera cachedCamera;
+    private int lastScreenWidth = -1;
+    private int lastScreenHeight = -1;
+    private Matrix4x4 lastCamMatrix;
+    private bool needsCameraUpdate = true;
 
     void Start()
     {
         lastTime = Time.realtimeSinceStartup;
+        cachedCamera = GetComponent<Camera>();
         
         if (Application.isPlaying && enableFirstPersonControls)
         {
@@ -78,6 +86,7 @@ public class RayTracingManager : MonoBehaviour
         if (enableFirstPersonControls)
         {
             HandleFirstPersonControls();
+            needsCameraUpdate = true;
         }
 
         // Atalhos para visão relativística
@@ -186,15 +195,31 @@ public class RayTracingManager : MonoBehaviour
         }
         else
         {
-            InitFrame();
+            // Check if screen resolution changed
+            if (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight)
+            {
+                lastScreenWidth = Screen.width;
+                lastScreenHeight = Screen.height;
+                needsCameraUpdate = true;
+            }
+
+            InitFrame(Camera.current);
             Graphics.Blit(null, target, rayTracingMaterial);
         }
     }
 
-    void InitFrame()
+    void InitFrame(Camera cam)
     {
         ShaderHelper.InitMaterial(rayTracingShader, ref rayTracingMaterial);
-        UpdateCameraParams(Camera.current);
+        
+        // Only update camera params if needed
+        if (needsCameraUpdate || cam.transform.localToWorldMatrix != lastCamMatrix)
+        {
+            UpdateCameraParams(cam);
+            lastCamMatrix = cam.transform.localToWorldMatrix;
+            needsCameraUpdate = false;
+        }
+        
         SetShaderParams();
     }
      
