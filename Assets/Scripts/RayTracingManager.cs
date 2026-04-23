@@ -6,7 +6,6 @@ using static UnityEngine.Mathf;
 public class RayTracingManager : MonoBehaviour
 {
     public const int TriangleLimit = 1500;
-
     [Header("Ray Tracing Settings")]
     [SerializeField, Min(0)] float focusDistance = 1;
     [SerializeField] Vector3 lightDirection = new Vector3(1, -1, -1);
@@ -14,8 +13,8 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField, Min(0)] float stepSize;
-    [SerializeField, Min(1)] int maxSteps;
+    [SerializeField, Min(0.001f)] float stepSize = 0.1f;
+    [SerializeField, Min(1)] int maxSteps = 1000;
     
     [Header("Point Mode Settings")]
     [SerializeField] bool usePointMode = false;
@@ -30,11 +29,6 @@ public class RayTracingManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] Shader rayTracingShader;
-
-    [Header("Info")]
-    [SerializeField] int numMeshChunks;
-    [SerializeField] int numTriangles;
-    [SerializeField] int numEmissiveSpheres;
 
     // FPS tracking variables
     private float deltaTime = 0.0f;
@@ -51,14 +45,6 @@ public class RayTracingManager : MonoBehaviour
 
     // Materials and render textures
     Material rayTracingMaterial;
-
-    // Buffers
-    ComputeBuffer sphereBuffer;
-    ComputeBuffer triangleBuffer;
-    ComputeBuffer meshInfoBuffer;
-
-    List<Triangle> allTriangles;
-    List<MeshInfo> allMeshInfo;
 
     void Start()
     {
@@ -158,25 +144,6 @@ public class RayTracingManager : MonoBehaviour
             string text = string.Format("FPS: {0:0.} ({1:0.0} ms)", fps, msec);
             GUI.Label(rect, text, style);
 
-            rect.y += 25;
-            style.normal.textColor = Color.white;
-            string rayTracingInfo = string.Format("Triangles: {0} | Meshes: {1} | Emissive Spheres: {2}",
-                numTriangles, numMeshChunks, numEmissiveSpheres);
-            GUI.Label(rect, rayTracingInfo, style);
-
-            rect.y += 25;
-            style.normal.textColor = Application.isPlaying ? Color.green : Color.cyan;
-            string modeText = Application.isPlaying ? "RUNTIME" : "EDITOR";
-            GUI.Label(rect, modeText, style);
-
-            if (Application.isPlaying && enableFirstPersonControls)
-            {
-                rect.y += 25;
-                style.normal.textColor = cursorLocked ? Color.green : Color.red;
-                string controlsText = cursorLocked ? "WASD: Move | Mouse: Look | Space/Shift: Up/Down | ESC: Unlock" : "Press ESC to enable controls";
-                GUI.Label(rect, controlsText, style);
-            }
-
             // Mostrar status da visão relativística
             rect.y += 25;
             style.normal.textColor = useRelativisticView ? Color.cyan : Color.gray;
@@ -192,6 +159,14 @@ public class RayTracingManager : MonoBehaviour
                 "Point Mode: ON | Press P to disable" : 
                 "Point Mode: OFF | Press P to enable";
             GUI.Label(rect, pointModeText, style);
+
+            if (Application.isPlaying && enableFirstPersonControls)
+            {
+                rect.y += 25;
+                style.normal.textColor = cursorLocked ? Color.green : Color.red;
+                string controlsText = cursorLocked ? "WASD: Move | Mouse: Look | Space/Shift: Up/Down | ESC: Unlock" : "Press ESC to enable controls";
+                GUI.Label(rect, controlsText, style);
+            }
         }
     }
 
@@ -220,8 +195,6 @@ public class RayTracingManager : MonoBehaviour
     {
         ShaderHelper.InitMaterial(rayTracingShader, ref rayTracingMaterial);
         UpdateCameraParams(Camera.current);
-        CreateSpheres();
-        CreateMeshes();
         SetShaderParams();
     }
      
@@ -253,70 +226,6 @@ public class RayTracingManager : MonoBehaviour
         float planeWidth = planeHeight * cam.aspect;
         rayTracingMaterial.SetVector("ViewParams", new Vector3(planeWidth, planeHeight, focusDistance));
         rayTracingMaterial.SetMatrix("CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
-    }
-
-    void CreateMeshes()
-    {
-        RayTracedMesh[] meshObjects = FindObjectsByType<RayTracedMesh>(FindObjectsSortMode.None);
-
-        allTriangles ??= new List<Triangle>();
-        allMeshInfo ??= new List<MeshInfo>();
-        allTriangles.Clear();
-        allMeshInfo.Clear();
-
-        for (int i = 0; i < meshObjects.Length; i++)
-        {
-            MeshChunk[] chunks = meshObjects[i].GetSubMeshes();
-            foreach (MeshChunk chunk in chunks)
-            {
-                RayTracingMaterial material = meshObjects[i].GetMaterial(chunk.subMeshIndex);
-                allMeshInfo.Add(new MeshInfo(allTriangles.Count, chunk.triangles.Length, material, chunk.bounds));
-                allTriangles.AddRange(chunk.triangles);
-            }
-        }
-
-        numMeshChunks = allMeshInfo.Count;
-        numTriangles = allTriangles.Count;
-
-        ShaderHelper.CreateStructuredBuffer(ref triangleBuffer, allTriangles);
-        ShaderHelper.CreateStructuredBuffer(ref meshInfoBuffer, allMeshInfo);
-        rayTracingMaterial.SetBuffer("Triangles", triangleBuffer);
-        rayTracingMaterial.SetBuffer("AllMeshInfo", meshInfoBuffer);
-        rayTracingMaterial.SetInt("NumMeshes", allMeshInfo.Count);
-    }
-
-    void CreateSpheres()
-    {
-        RayTracedSphere[] sphereObjects = FindObjectsByType<RayTracedSphere>(FindObjectsSortMode.None);
-        Sphere[] spheres = new Sphere[sphereObjects.Length];
-
-        int emissiveCount = 0;
-        for (int i = 0; i < sphereObjects.Length; i++)
-        {
-            spheres[i] = new Sphere()
-            {
-                position = sphereObjects[i].transform.position,
-                radius = sphereObjects[i].transform.localScale.x * 0.5f,
-                material = sphereObjects[i].material,
-                massa = sphereObjects[i].massa
-            };
-
-            if (sphereObjects[i].material.emissionStrength > 0)
-            {
-                emissiveCount++;
-            }
-        }
-
-        numEmissiveSpheres = emissiveCount;
-
-        ShaderHelper.CreateStructuredBuffer(ref sphereBuffer, spheres);
-        rayTracingMaterial.SetBuffer("Spheres", sphereBuffer);
-        rayTracingMaterial.SetInt("NumSpheres", sphereObjects.Length);
-    }
-
-    void OnDisable()
-    {
-        ShaderHelper.Release(sphereBuffer, triangleBuffer, meshInfoBuffer);
     }
 
     // --- Métodos Públicos ---
@@ -364,5 +273,4 @@ public class RayTracingManager : MonoBehaviour
     {
         return maxSteps;
     }
-
 }
