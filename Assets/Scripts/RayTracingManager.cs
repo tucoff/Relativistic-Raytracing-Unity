@@ -94,11 +94,18 @@ public class RayTracingManager : MonoBehaviour
         {
             ToggleRelativisticView();
         }
-        
+
         // Atalho para modo ponto
         if (Input.GetKeyDown(KeyCode.P))
         {
             TogglePointMode();
+        }
+
+        if (Input.GetKey(KeyCode.L))
+        {
+            float msec = deltaTime * 1000.0f;
+            string text = string.Format("FPS: {0:0.} ({1:0.0} ms)", fps, msec);
+            if (fps != 0) Debug.Log(text);
         }
     }
 
@@ -135,46 +142,6 @@ public class RayTracingManager : MonoBehaviour
             {
                 move = move.normalized * moveSpeed * Time.deltaTime;
                 transform.position += move;
-            }
-        }
-    }
-
-    void OnGUI()
-    {
-        if (showFPS)
-        {
-            int w = Screen.width, h = Screen.height;
-            GUIStyle style = new GUIStyle();
-            Rect rect = new Rect(10, 10, w, h * 2 / 100);
-            style.alignment = TextAnchor.UpperLeft;
-            style.fontSize = h * 2 / 100;
-            style.normal.textColor = Color.yellow;
-            float msec = deltaTime * 1000.0f;
-            string text = string.Format("FPS: {0:0.} ({1:0.0} ms)", fps, msec);
-            GUI.Label(rect, text, style);
-
-            // Mostrar status da visão relativística
-            rect.y += 25;
-            style.normal.textColor = useRelativisticView ? Color.cyan : Color.gray;
-            string relativisticText = useRelativisticView ? 
-                $"Relativistic View: ON | Press H to disable" : 
-                "Relativistic View: OFF | Press H to enable";
-            GUI.Label(rect, relativisticText, style);
-            
-            // Mostrar status do modo ponto
-            rect.y += 25;
-            style.normal.textColor = usePointMode ? Color.yellow : Color.gray;
-            string pointModeText = usePointMode ? 
-                "Point Mode: ON | Press P to disable" : 
-                "Point Mode: OFF | Press P to enable";
-            GUI.Label(rect, pointModeText, style);
-
-            if (Application.isPlaying && enableFirstPersonControls)
-            {
-                rect.y += 25;
-                style.normal.textColor = cursorLocked ? Color.green : Color.red;
-                string controlsText = cursorLocked ? "WASD: Move | Mouse: Look | Space/Shift: Up/Down | ESC: Unlock" : "Press ESC to enable controls";
-                GUI.Label(rect, controlsText, style);
             }
         }
     }
