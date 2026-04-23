@@ -197,6 +197,9 @@ public class RayTracingManager : MonoBehaviour
     public Metric selectedMetric = Metric.Schwarzschild;
     public Integrator selectedIntegrator = Integrator.Euler;
     [SerializeField] float spinSpeed = 0.5f;
+
+    [Header("Scene Selection")]
+    [SerializeField, Range(1, 6)] int currentScene = 1;
      
     void SetShaderParams()
     {
@@ -210,6 +213,7 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_Metric", (int)selectedMetric);
         rayTracingMaterial.SetInt("_Integrator", (int)selectedIntegrator);
         rayTracingMaterial.SetFloat("_SpinSpeed", spinSpeed);
+        rayTracingMaterial.SetInt("_CurrentScene", currentScene);
     }
 
     void UpdateCameraParams(Camera cam)
