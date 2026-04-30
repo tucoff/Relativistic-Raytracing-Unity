@@ -11,7 +11,6 @@ Shader "Custom/RayTracingRelativistic"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            // --- Estruturas de Dados ---
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -39,19 +38,6 @@ Shader "Custom/RayTracingRelativistic"
                 float3 colour;
             };
 
-            struct SceneConfig
-            {
-                float3 spherePos;
-                float sphereRadius;
-                float sphereMass;
-                float3 sphere2Pos;
-                float sphere2Radius;
-                float sphere2Mass;
-                bool hasRing;
-                bool useUniverse;
-            };
-
-            // --- Parâmetros de Câmera e Controle ---
             float3 ViewParams;
             float4x4 CamLocalToWorldMatrix;
             int _UseHyperbolicView;
@@ -62,32 +48,27 @@ Shader "Custom/RayTracingRelativistic"
             int _Metric;
             int _Integrator;
             float _SpinSpeed;
-
-            // --- Scene Control ---
             int _CurrentScene;
 
-            // --- CONSTANTES REAIS (SI) ---
+            samplerCUBE _SkyboxTexture;
+
             static const float G_REAL = 6.67430e-11;
             static const float C_REAL = 299792458.0;
             static const float SOLAR_MASS = 1.989e30;
             static const float MASS = 10.0 * SOLAR_MASS;
             static const float RS_KM = (2.0 * G_REAL * MASS) / (C_REAL * C_REAL) / 1000.0;
 
-            // --- Configurações da Esfera Primária ---
             static const float3 SPHERE_POS = float3(0.0, 0.0, -150.0);
             static const float SPHERE_RADIUS = RS_KM;
             static const float SPHERE_MASS = MASS;
 
-            // --- Configurações do Anel de Acrição ---
             static const float3 RING_NORMAL = normalize(float3(0.3, 1.0, 0.3));
             static const float RING_INNER = RS_KM * 4.0;
             static const float RING_OUTER = RS_KM * 7.0;
 
-            // --- Configurações de Kerr ---
             static const float3 KERR_SPIN_AXIS = normalize(float3(0.0, 1.0, 0.0));
             static const float KERR_SPIN_AMOUNT = RS_KM;
 
-            // --- Variáveis Dinâmicas (Configuradas por Cena) ---
             float3 _SpherePos;
             float _SphereRadius;
             float _SphereMass;
@@ -97,29 +78,30 @@ Shader "Custom/RayTracingRelativistic"
             int _HasRing;
             int _UseUniverseSkybox;
 
-            // --- Função de Carregamento de Cena ---
             void LoadSceneConfig()
             {
-                // Cena 1: Buraco Negro com fundo colorido
+                _SpherePos = SPHERE_POS;
+                _SphereRadius = SPHERE_RADIUS;
+                _SphereMass = SPHERE_MASS;
+                _Sphere2Pos = float3(0.0, 0.0, 0.0);
+                _Sphere2Radius = 0.0;
+                _Sphere2Mass = 0.0;
+                _HasRing = 0;
+                _UseUniverseSkybox = 0;
+
                 if (_CurrentScene == 1)
                 {
                     _SpherePos = float3(0.0, 0.0, -150.0);
                     _SphereRadius = RS_KM;
                     _SphereMass = MASS;
-                    _HasRing = 0;
-                    _UseUniverseSkybox = 0;
                 }
-                // Cena 2: Buraco Negro com skybox do universo
                 else if (_CurrentScene == 2)
                 {
                     _SpherePos = float3(0.0, 0.0, -150.0);
                     _SphereRadius = RS_KM;
                     _SphereMass = MASS;
-                    _HasRing = 0;
                     _UseUniverseSkybox = 1;
-                    // TODO: Implementar skybox do universo
                 }
-                // Cena 3: Buraco Negro com skybox e disco de acrição
                 else if (_CurrentScene == 3)
                 {
                     _SpherePos = float3(0.0, 0.0, -150.0);
@@ -127,9 +109,7 @@ Shader "Custom/RayTracingRelativistic"
                     _SphereMass = MASS;
                     _HasRing = 1;
                     _UseUniverseSkybox = 1;
-                    // TODO: Implementar skybox do universo
                 }
-                // Cena 4: Dois Buracos Negros com fundo colorido
                 else if (_CurrentScene == 4)
                 {
                     _SpherePos = float3(-50.0, 0.0, -150.0);
@@ -138,10 +118,7 @@ Shader "Custom/RayTracingRelativistic"
                     _Sphere2Pos = float3(50.0, 0.0, -150.0);
                     _Sphere2Radius = RS_KM;
                     _Sphere2Mass = MASS;
-                    _HasRing = 0;
-                    _UseUniverseSkybox = 0;
                 }
-                // Cena 5: Dois Buracos Negros com skybox do universo
                 else if (_CurrentScene == 5)
                 {
                     _SpherePos = float3(-50.0, 0.0, -150.0);
@@ -150,11 +127,8 @@ Shader "Custom/RayTracingRelativistic"
                     _Sphere2Pos = float3(50.0, 0.0, -150.0);
                     _Sphere2Radius = RS_KM;
                     _Sphere2Mass = MASS;
-                    _HasRing = 0;
                     _UseUniverseSkybox = 1;
-                    // TODO: Implementar skybox do universo
                 }
-                // Cena 6: Eclipse de Einstein
                 else if (_CurrentScene == 6)
                 {
                     _SpherePos = float3(0.0, 0.0, -150.0);
@@ -162,21 +136,10 @@ Shader "Custom/RayTracingRelativistic"
                     _SphereMass = MASS * 2.0;
                     _Sphere2Pos = float3(15.0, 0.0, -100.0);
                     _Sphere2Radius = RS_KM * 0.5;
-                    _Sphere2Mass = 0.0;
-                    _HasRing = 0;
                     _UseUniverseSkybox = 1;
-                    // TODO: Implementar skybox customizado com uma única estrela
-                }
-                // Cena padrão
-                else
-                {
-                    _SpherePos = SPHERE_POS;
-                    _SphereRadius = SPHERE_RADIUS;
-                    _SphereMass = SPHERE_MASS;
-                    _HasRing = 0;
-                    _UseUniverseSkybox = 0;
                 }
             }
+
             HitInfo RaySphere(Ray ray, float3 sphereCentre, float sphereRadius)
             {
                 HitInfo hitInfo = (HitInfo)0;
@@ -187,7 +150,9 @@ Shader "Custom/RayTracingRelativistic"
                 float discriminant = b * b - 4 * a * c;
 
                 if (discriminant >= 0) {
-                    float dst = (-b - sqrt(discriminant)) / (2 * a);
+                    float sqrtDisc = sqrt(discriminant);
+                    float dst = (-b - sqrtDisc) / (2 * a);
+                    if (dst < 0) dst = (-b + sqrtDisc) / (2 * a);
                     if (dst >= 0) {
                         hitInfo.didHit = true;
                         hitInfo.dst = dst;
@@ -225,7 +190,6 @@ Shader "Custom/RayTracingRelativistic"
                 HitInfo closestHit = (HitInfo)0;
                 closestHit.dst = 1e10;
 
-                // --- Colisão com a Esfera Primária ---
                 HitInfo sphereHit = RaySphere(ray, _SpherePos, _SphereRadius);
                 if (sphereHit.didHit && sphereHit.dst < closestHit.dst)
                 {
@@ -234,8 +198,7 @@ Shader "Custom/RayTracingRelativistic"
                     if (_UseHyperbolicView == 0) closestHit.colour = float3(0.74, 0.74, 0.74);
                 }
 
-                // --- Colisão com Segunda Esfera (se existir) ---
-                if (_CurrentScene == 4 || _CurrentScene == 5 || _CurrentScene == 6)
+                if (_Sphere2Radius > 0.0)
                 {
                     HitInfo sphere2Hit = RaySphere(ray, _Sphere2Pos, _Sphere2Radius);
                     if (sphere2Hit.didHit && sphere2Hit.dst < closestHit.dst)
@@ -246,7 +209,6 @@ Shader "Custom/RayTracingRelativistic"
                     }
                 }
 
-                // --- Colisão com o Anel de Acrição ---
                 if (_HasRing == 1)
                 {
                     float t_ring;
@@ -265,7 +227,6 @@ Shader "Custom/RayTracingRelativistic"
                 return closestHit;
             }
 
-            // --- Função de Aceleração Gravitacional ---
             float3 GetGravityAccel(float3 pos, float3 v)
             {
                 float3 toSphere = _SpherePos - pos;
@@ -278,53 +239,65 @@ Shader "Custom/RayTracingRelativistic"
 
                 float3 accel = float3(0, 0, 0);
 
-                if (_Metric == 0) // Newton: a = (GM / r^3) * r_vector
+                if (_Metric == 0)
                 {
-                    accel = toSphere * (RS_KM * 0.5) / r_dist3;
+                    accel = toSphere * (_SphereRadius * 0.5) / r_dist3;
                 }
-                else if (_Metric == 1) // Schwarzschild: a = 1.5 * Rs * |r x v|^2 / r^5 * (center - pos)
+                else if (_Metric == 1)
                 {
                     float3 h_vec = cross(-toSphere, v);
-                    float h2 = dot(h_vec, h_vec);
-                    accel = toSphere * (1.5 * RS_KM * h2) / r_dist5;
+                    accel = toSphere * (1.5 * _SphereRadius * dot(h_vec, h_vec)) / r_dist5;
                 }
-                else // Kerr (Métrica de Buraco Negro em Rotação)
+                else 
                 {
                     float3 r_vec = -toSphere;
                     float3 h_vec = cross(r_vec, v);
-                    float h2 = dot(h_vec, h_vec);
-        
-                    float3 a_schwarzschild = -r_vec * (1.5 * RS_KM * h2) / r_dist5;
-        
-                    // Frame Dragging (Lense-Thirring)
-                    float3 spin_vec = KERR_SPIN_AXIS * KERR_SPIN_AMOUNT * _SpinSpeed;
+                    float3 a_schwarzschild = -r_vec * (1.5 * _SphereRadius * dot(h_vec, h_vec)) / r_dist5;
+                    float3 spin_vec = KERR_SPIN_AXIS * _SphereRadius * _SpinSpeed;
                     float3 H = (2.0 / r_dist5) * (3.0 * r_vec * dot(spin_vec, r_vec) - spin_vec * r_dist2);
-                    float3 a_frame_drag = cross(v, H);
-        
+                    float3 a_frame_drag = -cross(v, H);
                     accel = a_schwarzschild + a_frame_drag;
                 }
 
-                // Adiciona influência de segunda esfera se existir
-                if (_CurrentScene == 4 || _CurrentScene == 5 || _CurrentScene == 6)
+                if (_Sphere2Radius > 0.0)
                 {
                     float3 toSphere2 = _Sphere2Pos - pos;
                     float r2_dist = length(toSphere2);
                     if (r2_dist > 0.0001)
                     {
-                        float r2_dist2 = r2_dist * r2_dist;
-                        float r2_dist3 = r2_dist2 * r2_dist;
-                        accel += toSphere2 * (RS_KM * 0.5) / r2_dist3;
+                        float d2_2 = r2_dist * r2_dist;
+                        float d2_3 = d2_2 * r2_dist;
+                        float d2_5 = d2_3 * d2_2;
+
+                        if (_Metric == 0)
+                        {
+                            accel += toSphere2 * (_Sphere2Radius * 0.5) / d2_3;
+                        }
+                        else if (_Metric == 1)
+                        {
+                            float3 h_vec2 = cross(-toSphere2, v);
+                            accel += toSphere2 * (1.5 * _Sphere2Radius * dot(h_vec2, h_vec2)) / d2_5;
+                        }
+                        else 
+                        {
+                            float3 r_vec2 = -toSphere2;
+                            float3 h_vec2 = cross(r_vec2, v);
+                            float3 a_schwarzschild2 = -r_vec2 * (1.5 * _Sphere2Radius * dot(h_vec2, h_vec2)) / d2_5;
+                            float3 spin_vec2 = KERR_SPIN_AXIS * _Sphere2Radius * _SpinSpeed;
+                            float3 H2 = (2.0 / d2_5) * (3.0 * r_vec2 * dot(spin_vec2, r_vec2) - spin_vec2 * d2_2);
+                            float3 a_frame_drag2 = -cross(v, H2);
+                            accel += a_schwarzschild2 + a_frame_drag2;
+                        }
                     }
                 }
 
                 return accel;
             }
 
-            // --- Novos Métodos de Integração ---
             void StepEuler(inout float3 origin, inout float3 velocity, float dt)
             {
                 float3 accel = GetGravityAccel(origin, velocity);
-                velocity += accel * dt;
+                velocity = normalize(velocity + accel * dt);
                 origin += velocity * dt;
             }
 
@@ -333,36 +306,32 @@ Shader "Custom/RayTracingRelativistic"
                 float3 p = origin;
                 float3 v = velocity;
 
-                // k1
                 float3 k1_p = v;
                 float3 k1_v = GetGravityAccel(p, v);
 
-                // k2
                 float3 k2_p = v + 0.5 * dt * k1_v;
                 float3 k2_v = GetGravityAccel(p + 0.5 * dt * k1_p, v + 0.5 * dt * k1_v);
 
-                // k3
                 float3 k3_p = v + 0.5 * dt * k2_v;
                 float3 k3_v = GetGravityAccel(p + 0.5 * dt * k2_p, v + 0.5 * dt * k2_v);
 
-                // k4
                 float3 k4_p = v + dt * k3_v;
                 float3 k4_v = GetGravityAccel(p + dt * k3_p, v + dt * k3_v);
 
                 origin += (dt / 6.0) * (k1_p + 2.0 * k2_p + 2.0 * k3_p + k4_p);
                 float3 new_velocity = v + (dt / 6.0) * (k1_v + 2.0 * k2_v + 2.0 * k3_v + k4_v);
                 
-                // Normalize at the very end to maintain light speed c=1
                 velocity = normalize(new_velocity);
             }
 
-            HitInfo ApplyRelativisticEffects(float3 initialRayDir)
+            HitInfo ApplyRelativisticEffects(float3 initialRayDir, out float3 finalRayDir)
             {
                 if (_UseHyperbolicView == 0) 
                 { 
                     Ray straightRay; 
                     straightRay.origin = _WorldSpaceCameraPos;  
                     straightRay.dir = initialRayDir; 
+                    finalRayDir = initialRayDir;
          
                     return CalculateRayCollision(straightRay); 
                 }
@@ -377,21 +346,35 @@ Shader "Custom/RayTracingRelativistic"
                     
                     if (hitInfo.didHit && hitInfo.dst <= _StepSize)
                     {
+                        finalRayDir = ray.dir;
                         return hitInfo;
                     }
                     
+                    // First Black Hole Trapping
                     if (length(_SpherePos - ray.origin) < _SphereRadius)
                     {
                         HitInfo black = (HitInfo)0;
                         black.didHit = true;
                         black.dst = 0.0;
                         black.colour = float3(0, 0, 0);
+                        finalRayDir = ray.dir;
+                        return black;
+                    }
+
+                    // Second Black Hole Trapping
+                    if (_Sphere2Radius > 0.0 && length(_Sphere2Pos - ray.origin) < _Sphere2Radius)
+                    {
+                        HitInfo black = (HitInfo)0;
+                        black.didHit = true;
+                        black.dst = 0.0;
+                        black.colour = float3(0, 0, 0);
+                        finalRayDir = ray.dir;
                         return black;
                     }
                     
-                    if (_Integrator == 1) // RK4
+                    if (_Integrator == 1)
                         StepRK4(ray.origin, ray.dir, _StepSize);
-                    else // Euler
+                    else
                         StepEuler(ray.origin, ray.dir, _StepSize);
                     
                     if (length(ray.origin - _WorldSpaceCameraPos) > 2000.0) break;
@@ -399,20 +382,27 @@ Shader "Custom/RayTracingRelativistic"
                 
                 HitInfo missInfo = (HitInfo)0;
                 missInfo.didHit = false;
+                finalRayDir = ray.dir;
                 return missInfo;
             }
 
-            // --- Iluminação Global (Inalterada mas usando calculateRayCollision padrão) ---
-            float3 GetSkyColor(float3 direction)
+            float3 GetSkyColor(float3 direction, int useUniverse)
             {
-                float3 unitDir = normalize(direction);
-                if (unitDir.x < 0 && unitDir.y > 0) return float3(1, 1, 0);
-                else if (unitDir.x >= 0 && unitDir.y > 0) return float3(1, 0, 0);
-                else if (unitDir.x < 0 && unitDir.y < 0) return float3(0, 1, 0);
-                else return float3(0, 0, 1);
+                if (useUniverse == 1)
+                {
+                    // Added 0.67 multiplier to match GLSL SKYBOX_BRIGHTNESS
+                    return texCUBE(_SkyboxTexture, direction).rgb;// * 0.67;
+                }
+                else
+                {
+                    float3 unitDir = normalize(direction);
+                    if (unitDir.x < 0 && unitDir.y > 0) return float3(1, 1, 0);
+                    else if (unitDir.x >= 0 && unitDir.y > 0) return float3(1, 0, 0);
+                    else if (unitDir.x < 0 && unitDir.y < 0) return float3(0, 1, 0);
+                    else return float3(0, 0, 1);
+                }
             }
 
-            // --- Fragment Shader ---
             v2f vert (appdata v)
             {
                 v2f o;
@@ -423,7 +413,6 @@ Shader "Custom/RayTracingRelativistic"
 
             float4 frag (v2f i) : SV_Target
             {
-                // Carrega configuração da cena no início do fragment 
                 LoadSceneConfig();
 
                 float3 focusPointLocal = float3(i.uv - 0.5, 1) * ViewParams;
@@ -438,7 +427,8 @@ Shader "Custom/RayTracingRelativistic"
                     { return float4(0,0,0,1); }
                 }
 
-                HitInfo hitInfo = ApplyRelativisticEffects(initialRayDir);
+                float3 finalRayDir;
+                HitInfo hitInfo = ApplyRelativisticEffects(initialRayDir, finalRayDir);
                 float3 finalColour = float3(0, 0, 0);
 
                 if (hitInfo.didHit)
@@ -447,9 +437,9 @@ Shader "Custom/RayTracingRelativistic"
                 }
                 else
                 {
-                    finalColour = GetSkyColor(initialRayDir);
+                    finalColour = GetSkyColor(finalRayDir, _UseUniverseSkybox);
                 }
-                
+
                 return float4(finalColour, 1.0);
             }
             ENDCG

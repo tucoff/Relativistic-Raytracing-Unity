@@ -13,14 +13,11 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField, Min(0.001f)] float stepSize = 0.1f;
+    [SerializeField, Min(0.001f)] float stepSize = 10f;
     [SerializeField, Min(1)] int maxSteps = 1000;
     
     [Header("Point Mode Settings")]
-    [SerializeField] bool usePointMode = false;
-
-    [Header("View Settings")]
-    [SerializeField] bool showFPS = true;
+    [SerializeField] bool usePointMode = false; 
 
     [Header("First Person Controls")]
     [SerializeField] float moveSpeed = 5f;
@@ -214,6 +211,53 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_Integrator", (int)selectedIntegrator);
         rayTracingMaterial.SetFloat("_SpinSpeed", spinSpeed);
         rayTracingMaterial.SetInt("_CurrentScene", currentScene);
+        
+        SetupSkyboxTexture();
+    }
+
+    void SetupSkyboxTexture()
+    {
+        // Scenes 1 and 4 use colors instead of skybox texture
+        if (currentScene == 1 || currentScene == 4)
+        {
+            rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
+            return;
+        }
+
+        if (RenderSettings.skybox == null)
+        {
+            rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
+            return;
+        }
+
+        // Skybox/6 Sided usa 6 texturas 2D, não cubemap
+        // Outros shaders de skybox podem ter cubemap em propriedades diferentes
+        string[] cubemapProperties = new string[]
+        {
+            "_Tex",          // Skybox/Cubemap
+            "_Cube",         // Skybox/Procedural
+            "_MainTex",      // Variação comum
+            "_TexCube",      // Alternativa
+            "_SkyboxTexture" // Custom
+        };
+
+        Texture skyboxTexture = null;
+        foreach (string prop in cubemapProperties)
+        {
+            if (RenderSettings.skybox.HasProperty(prop))
+            {
+                skyboxTexture = RenderSettings.skybox.GetTexture(prop);
+                if (skyboxTexture != null && skyboxTexture is Cubemap)
+                {
+                    rayTracingMaterial.SetInt("_UseSkyboxTexture", 1);
+                    rayTracingMaterial.SetTexture("_SkyboxTexture", skyboxTexture);
+                    return;
+                }
+            }
+        }
+
+        // Se não achou cubemap, usar fallback colorido
+        rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
     }
 
     void UpdateCameraParams(Camera cam)

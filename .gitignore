@@ -81,3 +81,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Cubemap files can be very large and are often generated from source images, so we ignore them by default.
+Assets/Space.cubemap
