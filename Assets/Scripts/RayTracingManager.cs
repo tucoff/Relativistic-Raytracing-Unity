@@ -22,7 +22,7 @@ public class RayTracingManager : MonoBehaviour
     [Header("First Person Controls")]
     [SerializeField] float moveSpeed = 5f;
     [SerializeField] float mouseSensitivity = 2f;
-    [SerializeField] bool enableFirstPersonControls = true;
+    public bool enableFirstPersonControls = false;
 
     [Header("References")]
     [SerializeField] Shader rayTracingShader;
@@ -195,9 +195,8 @@ public class RayTracingManager : MonoBehaviour
     public Integrator selectedIntegrator = Integrator.Euler;
     [SerializeField] float spinSpeed = 0.5f;
 
-    [Header("Scene Selection")]
-    [SerializeField, Range(1, 6)] int currentScene = 1;
-     
+    [Header("Scene Selection")] public int currentScene = 1;
+
     void SetShaderParams()
     {
         rayTracingMaterial.SetVector("_LightDirection", lightDirection.normalized);
@@ -312,5 +311,10 @@ public class RayTracingManager : MonoBehaviour
     public int GetMaxSteps()
     {
         return maxSteps;
+    } 
+
+    public void ForceCameraUpdate()
+    {
+        needsCameraUpdate = true;
     }
 }
