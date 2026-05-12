@@ -1,0 +1,1408 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BenchmarkConfiguration
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: 576283e5bda0c084abbfd1fe1722f243, type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: Assembly-CSharp::BenchmarkConfiguration
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.size
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[0].name
+    value: SmallStep
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[0].value
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[1].name
+    value: MediumStep
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[1].value
+    value: 52
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[2].name
+    value: BigStep
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: stepSizePresets.Array.data[2].value
+    value: 260
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.size
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[0].name
+    value: NormalG
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[0].value
+    value: 1.989e+31
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[1].name
+    value: StrongG
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[1].value
+    value: 3.978e+31
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[2].name
+    value: MuchStrongerG
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: gravityPresets.Array.data[2].value
+    value: 5.967e+31
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[0].name
+    value: NaturalSpinSpeed
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[0].value
+    value: 0.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[1].name
+    value: UnaturalSpinSpeed
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[1].value
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[2].name
+    value: StrongSpinSpeed
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[2].value
+    value: 50
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[3].name
+    value: FunnySpinSpeed
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spinSpeedPresets.Array.data[3].value
+    value: 200
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.size
+    value: 7
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].sceneId
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[0].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].sceneId
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[1].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].sceneId
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[2].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].sceneId
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[3].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].sceneId
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[4].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].sceneId
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[5].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].sceneId
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.size
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].name
+    value: Front
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].position.z
+    value: 666
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[0].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].name
+    value: Periferic
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].position.x
+    value: -140
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].position.z
+    value: -360
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].rotation.y
+    value: 66
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[1].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].name
+    value: Above
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].position.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].position.z
+    value: -150
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].rotation.x
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].rotation.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[2].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].name
+    value: Diagonal
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].position.x
+    value: -70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].position.y
+    value: 70
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].position.z
+    value: -400
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].rotation.x
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].rotation.y
+    value: 15
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[3].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].name
+    value: Tangent
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].rotation.y
+    value: 90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[4].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].name
+    value: LookAway
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].position.z
+    value: -180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].rotation.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].rotation.y
+    value: 180
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sceneCameraConfigs.Array.data[6].cameras.Array.data[5].rotation.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: resolutionsH.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsH.Array.data[0]'
+    value: 144
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsH.Array.data[1]'
+    value: 480
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsH.Array.data[2]'
+    value: 720
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsH.Array.data[3]'
+    value: 1080
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: resolutionsW.Array.size
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsW.Array.data[0]'
+    value: 256
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsW.Array.data[1]'
+    value: 853
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsW.Array.data[2]'
+    value: 1280
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: 'resolutionsW.Array.data[3]'
+    value: 1920
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: benchmarkDurationPerConfig
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: maxSteps
+    value: 1000
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []

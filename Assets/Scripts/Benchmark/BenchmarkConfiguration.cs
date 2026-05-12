@@ -56,7 +56,7 @@ public class BenchmarkConfiguration : MonoBehaviour
     [SerializeField] public int[] resolutionsW = { 256, 853, 1280, 1920 };
 
     [Header("Benchmark Settings")]
-    [SerializeField] public float benchmarkDurationPerConfig = 5f;
+    [SerializeField] public float benchmarkDurationPerConfig = 1f;
     [SerializeField] public int maxSteps = 1000;
 
     private static BenchmarkConfiguration instance;
@@ -75,82 +75,75 @@ public class BenchmarkConfiguration : MonoBehaviour
     }
 
     private void InitializeDefaultPresets()
-    {
-        // Initialize Step Sizes if empty
+    { 
         if (stepSizePresets.Count == 0)
         {
-            stepSizePresets.Add(new StepSizePreset { name = "Very Small", value = 1f });
-            stepSizePresets.Add(new StepSizePreset { name = "Small", value = 5f });
-            stepSizePresets.Add(new StepSizePreset { name = "Default", value = 10f });
-            stepSizePresets.Add(new StepSizePreset { name = "Large", value = 20f });
-            stepSizePresets.Add(new StepSizePreset { name = "Very Large", value = 50f });
+            stepSizePresets.Add(new StepSizePreset { name = "SmallStep", value = 1f });
+            stepSizePresets.Add(new StepSizePreset { name = "MediumStep", value = 52f });
+            stepSizePresets.Add(new StepSizePreset { name = "BigStep", value = 260f });
         }
-
-        // Initialize Gravity Presets if empty
+         
         if (gravityPresets.Count == 0)
         {
-            float baseMass = 1.989e30f;
-            gravityPresets.Add(new GravityPreset { name = "Natural", value = baseMass * 10f });
-            gravityPresets.Add(new GravityPreset { name = "Higher", value = baseMass * 50f });
-            gravityPresets.Add(new GravityPreset { name = "Very High", value = baseMass * 200f });
+            gravityPresets.Add(new GravityPreset { name = "NormalG", value = 1.989e31f });
+            gravityPresets.Add(new GravityPreset { name = "StrongG", value = 3.978e31f });
+            gravityPresets.Add(new GravityPreset { name = "MuchStrongerG", value = 5.967e31f });
         }
-
-        // Initialize Spin Speed Presets if empty
+         
         if (spinSpeedPresets.Count == 0)
         {
-            spinSpeedPresets.Add(new SpinSpeedPreset { name = "Natural", value = 0.5f });
-            spinSpeedPresets.Add(new SpinSpeedPreset { name = "Faster", value = 1.0f });
-            spinSpeedPresets.Add(new SpinSpeedPreset { name = "Very Fast", value = 2.0f });
+            spinSpeedPresets.Add(new SpinSpeedPreset { name = "NaturalSpinSpeed", value = 0.5f });
+            spinSpeedPresets.Add(new SpinSpeedPreset { name = "UnaturalSpinSpeed", value = 10f });
+            spinSpeedPresets.Add(new SpinSpeedPreset { name = "StrongSpinSpeed", value = 50f });
+            spinSpeedPresets.Add(new SpinSpeedPreset { name = "FunnySpinSpeed", value = 200f });
         }
-
-        // Initialize Scene Camera Configs if empty
+         
         if (sceneCameraConfigs.Count == 0)
         {
-            for (int sceneId = 1; sceneId <= 6; sceneId++)
+            for (int sceneId = 0; sceneId <= 6; sceneId++)
             {
                 SceneCameraConfig config = new SceneCameraConfig { sceneId = sceneId };
-
-                // Add default camera presets for each scene
+                 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Front View",
+                    name = "Front",
                     position = new Vector3(0f, 0f, 666f),
                     rotation = new Vector3(0f, 180f, 0f)
                 });
 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Peripheral View",
-                    position = new Vector3(300f, 100f, 400f),
-                    rotation = new Vector3(-15f, 130f, 0f)
+                    name = "Periferic",
+                    position = new Vector3(-140f, 0f, -360f),
+                    rotation = new Vector3(0f, 66f, 0f)
                 });
 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Top View",
-                    position = new Vector3(0f, 500f, 0f),
+                    name = "Above",
+                    position = new Vector3(0f, 180f, -150f),
                     rotation = new Vector3(90f, 0f, 0f)
                 });
 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Diagonal View",
-                    position = new Vector3(400f, 300f, 400f),
-                    rotation = new Vector3(-30f, 135f, 0f)
+                    name = "Diagonal",
+                    position = new Vector3(-70f, 70f, -400f),
+                    rotation = new Vector3(15f, 15f, 0f)
                 });
 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Tangent View",
-                    position = new Vector3(500f, 50f, 100f),
-                    rotation = new Vector3(-5f, 160f, 0f)
+                    name = "Tangent",
+                    position = new Vector3(0f, 0f, -180f),
+                    rotation = new Vector3(0f, 90f, 0f)
                 });
 
                 config.cameras.Add(new CameraPreset
                 {
-                    name = "Opposite Direction",
-                    position = new Vector3(0f, 0f, -666f),
-                    rotation = new Vector3(0f, 0f, 0f)
+                    name = "LookAway",
+                    position = new Vector3(0f, 0f, -200f),
+                    rotation = new Vector3(0f, 180f, 0f)
                 });
 
                 sceneCameraConfigs.Add(config);

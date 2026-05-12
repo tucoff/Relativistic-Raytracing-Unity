@@ -44,6 +44,7 @@ Shader "Custom/RayTracingRelativistic"
             int _UseHyperbolicView;
             int _UsePointMode;
             float _StepSize;
+            float _GravityMultiplier;
             int _MaxSteps;
 
             int _Metric;
@@ -139,12 +140,45 @@ Shader "Custom/RayTracingRelativistic"
                 }
                 else if (_CurrentScene == 6)
                 {
-                    _SpherePos = float3(0.0, 0.0, -150.0);
-                    _SphereRadius = RS_KM * 2.0;
-                    _SphereMass = MASS * 2.0;
-                    _Sphere2Pos = float3(15.0, 0.0, -100.0);
-                    _Sphere2Radius = RS_KM * 0.5;
-                    _UseUniverseSkybox = 1;
+                    // Sun (primary star)
+                    _Bodies[0] = float4(0.0, 0.0, 0.0, 20.0);
+                    _BodyMasses[0] = 1.989e30;
+                    
+                    // Mercury
+                    _Bodies[1] = float4(30.0, 0.0, 0.0, 2.0);
+                    _BodyMasses[1] = 3.285e23;
+                    
+                    // Venus
+                    _Bodies[2] = float4(50.0, 5.0, 10.0, 3.5);
+                    _BodyMasses[2] = 4.867e24;
+                    
+                    // Earth
+                    _Bodies[3] = float4(70.0, -3.0, 15.0, 3.7);
+                    _BodyMasses[3] = 5.972e24;
+                    
+                    // Mars
+                    _Bodies[4] = float4(90.0, 4.0, 20.0, 2.8);
+                    _BodyMasses[4] = 6.417e23;
+                    
+                    // Jupiter
+                    _Bodies[5] = float4(130.0, -8.0, 35.0, 12.0);
+                    _BodyMasses[5] = 1.898e27;
+                    
+                    // Saturn (with ring)
+                    _Bodies[6] = float4(170.0, 6.0, 50.0, 10.5);
+                    _BodyMasses[6] = 5.683e26;
+                    
+                    // Saturn alternate position for ring demonstration
+                    _Bodies[7] = float4(170.0, 6.0, 50.0, 10.5);
+                    _BodyMasses[7] = 5.683e26;
+                    
+                    // Uranus
+                    _Bodies[8] = float4(220.0, -5.0, 70.0, 8.0);
+                    _BodyMasses[8] = 8.681e25;
+                    
+                    // Neptune
+                    _Bodies[9] = float4(270.0, 7.0, 90.0, 7.8);
+                    _BodyMasses[9] = 1.024e26;
                 }
             }
 
@@ -298,7 +332,7 @@ Shader "Custom/RayTracingRelativistic"
                         float r_dist = length(toBody);
                         if (r_dist < 0.0001) continue;
 
-                        float rs_km = (2.0 * G_REAL * _BodyMasses[i]) / (C_REAL * C_REAL) / 1000.0;
+                        float rs_km = (2.0 * G_REAL * _BodyMasses[i] * _GravityMultiplier) / (C_REAL * C_REAL) / 1000.0;
                         float r_dist2 = r_dist * r_dist;
                         float r_dist3 = r_dist2 * r_dist;
                         
@@ -321,21 +355,23 @@ Shader "Custom/RayTracingRelativistic"
                 float r_dist3 = r_dist2 * r_dist;
                 float r_dist5 = r_dist3 * r_dist2;
 
+                float sphereRadiusAdjusted = _SphereRadius * _GravityMultiplier;
+                
                 if (_Metric == 0)
                 {
-                    accel = toSphere * (_SphereRadius * 0.5) / r_dist3;
+                    accel = toSphere * (sphereRadiusAdjusted * 0.5) / r_dist3;
                 }
                 else if (_Metric == 1)
                 {
                     float3 h_vec = cross(-toSphere, v);
-                    accel = toSphere * (1.5 * _SphereRadius * dot(h_vec, h_vec)) / r_dist5;
+                    accel = toSphere * (1.5 * sphereRadiusAdjusted * dot(h_vec, h_vec)) / r_dist5;
                 }
                 else 
                 {
                     float3 r_vec = -toSphere;
                     float3 h_vec = cross(r_vec, v);
-                    float3 a_schwarzschild = -r_vec * (1.5 * _SphereRadius * dot(h_vec, h_vec)) / r_dist5;
-                    float3 spin_vec = KERR_SPIN_AXIS * _SphereRadius * _SpinSpeed;
+                    float3 a_schwarzschild = -r_vec * (1.5 * sphereRadiusAdjusted * dot(h_vec, h_vec)) / r_dist5;
+                    float3 spin_vec = KERR_SPIN_AXIS * sphereRadiusAdjusted * _SpinSpeed;
                     float3 H = (2.0 / r_dist5) * (3.0 * r_vec * dot(spin_vec, r_vec) - spin_vec * r_dist2);
                     float3 a_frame_drag = -cross(v, H);
                     accel = a_schwarzschild + a_frame_drag;
@@ -351,21 +387,23 @@ Shader "Custom/RayTracingRelativistic"
                         float d2_3 = d2_2 * r2_dist;
                         float d2_5 = d2_3 * d2_2;
 
+                        float sphere2RadiusAdjusted = _Sphere2Radius * _GravityMultiplier;
+
                         if (_Metric == 0)
                         {
-                            accel += toSphere2 * (_Sphere2Radius * 0.5) / d2_3;
+                            accel += toSphere2 * (sphere2RadiusAdjusted * 0.5) / d2_3;
                         }
                         else if (_Metric == 1)
                         {
                             float3 h_vec2 = cross(-toSphere2, v);
-                            accel += toSphere2 * (1.5 * _Sphere2Radius * dot(h_vec2, h_vec2)) / d2_5;
+                            accel += toSphere2 * (1.5 * sphere2RadiusAdjusted * dot(h_vec2, h_vec2)) / d2_5;
                         }
                         else 
                         {
                             float3 r_vec2 = -toSphere2;
                             float3 h_vec2 = cross(r_vec2, v);
-                            float3 a_schwarzschild2 = -r_vec2 * (1.5 * _Sphere2Radius * dot(h_vec2, h_vec2)) / d2_5;
-                            float3 spin_vec2 = KERR_SPIN_AXIS * _Sphere2Radius * _SpinSpeed;
+                            float3 a_schwarzschild2 = -r_vec2 * (1.5 * sphere2RadiusAdjusted * dot(h_vec2, h_vec2)) / d2_5;
+                            float3 spin_vec2 = KERR_SPIN_AXIS * sphere2RadiusAdjusted * _SpinSpeed;
                             float3 H2 = (2.0 / d2_5) * (3.0 * r_vec2 * dot(spin_vec2, r_vec2) - spin_vec2 * d2_2);
                             float3 a_frame_drag2 = -cross(v, H2);
                             accel += a_schwarzschild2 + a_frame_drag2;

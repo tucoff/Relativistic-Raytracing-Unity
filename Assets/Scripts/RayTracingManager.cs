@@ -26,24 +26,20 @@ public class RayTracingManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] Shader rayTracingShader;
-
-    // FPS tracking variables
+     
     private float deltaTime = 0.0f;
     private float fps = 0.0f;
     private int frameCount = 0;
     private float fpsUpdateInterval = 0.5f;
     private float fpsAccumulator = 0.0f;
     private float lastTime = 0.0f;
-
-    // First person controls
+     
     private float xRotation = 0f;
     private float yRotation = 0f;
     private bool cursorLocked = false;
-
-    // Materials and render textures
+     
     Material rayTracingMaterial;
-    
-    // Cached values for optimization
+     
     private Camera cachedCamera;
     private int lastScreenWidth = -1;
     private int lastScreenHeight = -1;
@@ -87,14 +83,12 @@ public class RayTracingManager : MonoBehaviour
         }
 
         UpdateSolarSystem();
-
-        // Atalhos para visão relativística
+         
         if (Input.GetKeyDown(KeyCode.H))
         {
             ToggleRelativisticView();
         }
-
-        // Atalho para modo ponto
+         
         if (Input.GetKeyDown(KeyCode.P))
         {
             TogglePointMode();
@@ -160,8 +154,7 @@ public class RayTracingManager : MonoBehaviour
             Graphics.Blit(src, target);
         }
         else
-        {
-            // Check if screen resolution changed
+        { 
             if (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight)
             {
                 lastScreenWidth = Screen.width;
@@ -177,8 +170,7 @@ public class RayTracingManager : MonoBehaviour
     void InitFrame(Camera cam)
     {
         ShaderHelper.InitMaterial(rayTracingShader, ref rayTracingMaterial);
-        
-        // Only update camera params if needed
+         
         if (needsCameraUpdate || cam.transform.localToWorldMatrix != lastCamMatrix)
         {
             UpdateCameraParams(cam);
@@ -262,6 +254,7 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_UseHyperbolicView", useRelativisticView ? 1 : 0);
         rayTracingMaterial.SetInt("_UsePointMode", usePointMode ? 1 : 0);
         rayTracingMaterial.SetFloat("_StepSize", stepSize);
+        rayTracingMaterial.SetFloat("_GravityMultiplier", baseBlackHoleMass / (1.989e30f * 10f));
         rayTracingMaterial.SetInt("_MaxSteps", maxSteps);
          
         rayTracingMaterial.SetInt("_Metric", (int)selectedMetric);
@@ -287,8 +280,7 @@ public class RayTracingManager : MonoBehaviour
     }
 
     void SetupSkyboxTexture()
-    {
-        // Scenes 1 and 4 use colors instead of skybox texture
+    { 
         if (currentScene == 1 || currentScene == 4)
         {
             rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
@@ -300,9 +292,7 @@ public class RayTracingManager : MonoBehaviour
             rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
             return;
         }
-
-        // Skybox/6 Sided usa 6 texturas 2D, não cubemap
-        // Outros shaders de skybox podem ter cubemap em propriedades diferentes
+         
         string[] cubemapProperties = new string[]
         {
             "_Tex",          // Skybox/Cubemap
@@ -326,8 +316,7 @@ public class RayTracingManager : MonoBehaviour
                 }
             }
         }
-
-        // Se não achou cubemap, usar fallback colorido
+         
         rayTracingMaterial.SetInt("_UseSkyboxTexture", 0);
     }
 
@@ -337,9 +326,7 @@ public class RayTracingManager : MonoBehaviour
         float planeWidth = planeHeight * cam.aspect;
         rayTracingMaterial.SetVector("ViewParams", new Vector3(planeWidth, planeHeight, focusDistance));
         rayTracingMaterial.SetMatrix("CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
-    }
-
-    // --- Métodos Públicos ---
+    } 
 
     public void ToggleRelativisticView()
     {
