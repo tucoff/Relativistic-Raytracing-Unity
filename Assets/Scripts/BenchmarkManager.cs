@@ -7,9 +7,7 @@ public class BenchmarkAutomator : MonoBehaviour
 {
     [Header("Referências")]
     public RayTracingManager manager;
-    public BenchmarkConfiguration benchmarkConfig;
-
-    private bool useConfigPresets = true;
+    public BenchmarkConfiguration benchmarkConfig; 
 
     void Start()
     {
@@ -20,9 +18,12 @@ public class BenchmarkAutomator : MonoBehaviour
         string folderPath = Path.Combine(Application.dataPath, "../Benchmarks");
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
+        // Initialize CSV exporter
+        BenchmarkCSVExporter.InitializeCSV();
+
         if (benchmarkConfig == null)
         {
-            benchmarkConfig = FindObjectOfType<BenchmarkConfiguration>();
+            benchmarkConfig = FindFirstObjectByType<BenchmarkConfiguration>();
         }
 
         if (manager != null)
@@ -37,7 +38,7 @@ public class BenchmarkAutomator : MonoBehaviour
     {
         Debug.Log(">>> BENCHMARK INICIADO COM CONFIGURAÇÕES <<<");
 
-        BenchmarkConfiguration config = benchmarkConfig ?? FindObjectOfType<BenchmarkConfiguration>();
+        BenchmarkConfiguration config = benchmarkConfig ?? FindFirstObjectByType<BenchmarkConfiguration>();
         if (config == null)
         {
             Debug.LogError("BenchmarkConfiguration não encontrada!");
@@ -137,8 +138,56 @@ public class BenchmarkAutomator : MonoBehaviour
     }
 
     void CaptureAndSave(int w, int h, float avgFps, string metric, string integrator, int sceneId,
-        string camera, string stepSize, string gravity, string spinSpeed)
+        string cameraPresetName, string stepPresetName, string gravityPresetName, string spinPresetName)
     {
+        // Get the actual preset objects to pass to CSV exporter
+        BenchmarkConfiguration config = benchmarkConfig ?? FindFirstObjectByType<BenchmarkConfiguration>();
+        SceneCameraConfig sceneCamConfig = config?.GetSceneCameraConfig(sceneId);
+        CameraPreset cameraPreset = null;
+        StepSizePreset stepPreset = null;
+        GravityPreset gravityPreset = null;
+        SpinSpeedPreset spinPreset = null;
+
+        // Find the matching presets
+        if (sceneCamConfig != null)
+        {
+            foreach (var preset in sceneCamConfig.cameras)
+            {
+                if (preset.name.Replace(" ", "") == cameraPresetName)
+                {
+                    cameraPreset = preset;
+                    break;
+                }
+            }
+        }
+
+        foreach (var step in config.stepSizePresets)
+        {
+            if (step.name.Replace(" ", "") == stepPresetName)
+            {
+                stepPreset = step;
+                break;
+            }
+        }
+
+        foreach (var grav in config.gravityPresets)
+        {
+            if (grav.name.Replace(" ", "") == gravityPresetName)
+            {
+                gravityPreset = grav;
+                break;
+            }
+        }
+
+        foreach (var spin in config.spinSpeedPresets)
+        {
+            if (spin.name.Replace(" ", "") == spinPresetName)
+            {
+                spinPreset = spin;
+                break;
+            }
+        }
+
         // Cria buffer de renderização na resolução correta
         RenderTexture rt = new RenderTexture(w, h, 24);
         Camera cam = Camera.main;
@@ -160,11 +209,27 @@ public class BenchmarkAutomator : MonoBehaviour
 
         // Salva arquivo com a média no nome
         byte[] bytes = screenShot.EncodeToPNG();
-        string fileName = $"{avgFps:F1}FPS_{metric}_{integrator}_S{sceneId}_{camera}_{stepSize}_{gravity}_{spinSpeed}_{h}p.png";
+        string fileName = $"{avgFps:F1}FPS_{metric}_{integrator}_S{sceneId}_{cameraPresetName}_{stepPresetName}_{gravityPresetName}_{spinPresetName}_{h}p.png";
         string path = Path.Combine(Application.dataPath, "../Benchmarks", fileName);
 
         File.WriteAllBytes(path, bytes);
         Destroy(screenShot);
+
+        // Record to CSV if all presets were found
+        if (cameraPreset != null && stepPreset != null && gravityPreset != null && spinPreset != null)
+        {
+            float duration = config.benchmarkDurationPerConfig;
+            int frameCount = Mathf.RoundToInt(avgFps * duration);
+            BenchmarkCSVExporter.AppendBenchmarkData(
+                w, h, metric, integrator, sceneId,
+                cameraPreset, stepPreset, gravityPreset, spinPreset,
+                avgFps, frameCount, duration, path);
+        }
+        else
+        {
+            Debug.LogWarning("Could not find all presets for CSV export");
+        }
+
         Debug.Log($"Registrado: {fileName}");
     }
 }
