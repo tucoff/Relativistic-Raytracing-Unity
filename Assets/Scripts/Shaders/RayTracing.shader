@@ -36,6 +36,7 @@ Shader "Custom/RayTracingRelativistic"
                 float3 hitPoint;
                 float3 normal;
                 float3 colour;
+                int bodyIndex;
             };
 
             float3 ViewParams;
@@ -51,6 +52,13 @@ Shader "Custom/RayTracingRelativistic"
             int _CurrentScene;
 
             samplerCUBE _SkyboxTexture;
+            samplerCUBE _MilkyWayTex;
+            int _UseMilkyWay;
+
+            float4 _Bodies[10];
+            float _BodyMasses[10];
+            sampler2D _PlanetTex0; sampler2D _PlanetTex1; sampler2D _PlanetTex2; sampler2D _PlanetTex3; sampler2D _PlanetTex4;
+            sampler2D _PlanetTex5; sampler2D _PlanetTex6; sampler2D _PlanetTex7; sampler2D _PlanetTex8; sampler2D _PlanetTex9;
 
             static const float G_REAL = 6.67430e-11;
             static const float C_REAL = 299792458.0;
@@ -185,10 +193,59 @@ Shader "Custom/RayTracingRelativistic"
                 return false;
             }
 
+            float2 GetSphericalUV(float3 normal)
+            {
+                float u = atan2(normal.z, normal.x) / (2.0 * 3.14159265) + 0.5;
+                float v = asin(normal.y) / 3.14159265 + 0.5;
+                return float2(u, v);
+            }
+
             HitInfo CalculateRayCollision(Ray ray)
             {
                 HitInfo closestHit = (HitInfo)0;
                 closestHit.dst = 1e10;
+                closestHit.bodyIndex = -1;
+
+                if (_CurrentScene == 6)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        HitInfo hit = RaySphere(ray, _Bodies[i].xyz, _Bodies[i].w);
+                        if (hit.didHit && hit.dst < closestHit.dst)
+                        {
+                            closestHit = hit;
+                            closestHit.bodyIndex = i;
+                            
+                            float2 uv = GetSphericalUV(hit.normal);
+                            
+                            if (i == 0) closestHit.colour = tex2Dlod(_PlanetTex0, float4(uv, 0, 0)).rgb;
+                            else if (i == 1) closestHit.colour = tex2Dlod(_PlanetTex1, float4(uv, 0, 0)).rgb;
+                            else if (i == 2) closestHit.colour = tex2Dlod(_PlanetTex2, float4(uv, 0, 0)).rgb;
+                            else if (i == 3) closestHit.colour = tex2Dlod(_PlanetTex3, float4(uv, 0, 0)).rgb;
+                            else if (i == 4) closestHit.colour = tex2Dlod(_PlanetTex4, float4(uv, 0, 0)).rgb;
+                            else if (i == 5) closestHit.colour = tex2Dlod(_PlanetTex5, float4(uv, 0, 0)).rgb;
+                            else if (i == 6) closestHit.colour = tex2Dlod(_PlanetTex6, float4(uv, 0, 0)).rgb;
+                            else if (i == 7) closestHit.colour = tex2Dlod(_PlanetTex7, float4(uv, 0, 0)).rgb;
+                            else if (i == 8) closestHit.colour = tex2Dlod(_PlanetTex8, float4(uv, 0, 0)).rgb;
+                            else if (i == 9) closestHit.colour = tex2Dlod(_PlanetTex9, float4(uv, 0, 0)).rgb;
+                        }
+                    }
+
+                    float t_ring;
+                    float ringInner = _Bodies[7].w * 1.5;
+                    float ringOuter = _Bodies[7].w * 2.5;
+                    if (HitRing(_Bodies[7].xyz, float3(0.2, 1.0, 0.2), ringInner, ringOuter, ray, t_ring))
+                    {
+                        if (t_ring < closestHit.dst)
+                        {
+                            closestHit.didHit = true;
+                            closestHit.dst = t_ring;
+                            closestHit.hitPoint = ray.origin + ray.dir * t_ring;
+                            closestHit.colour = float3(0.8, 0.7, 0.5);
+                        }
+                    }
+                    return closestHit;
+                }
 
                 HitInfo sphereHit = RaySphere(ray, _SpherePos, _SphereRadius);
                 if (sphereHit.didHit && sphereHit.dst < closestHit.dst)
@@ -229,6 +286,33 @@ Shader "Custom/RayTracingRelativistic"
 
             float3 GetGravityAccel(float3 pos, float3 v)
             {
+                float3 accel = float3(0, 0, 0);
+
+                if (_CurrentScene == 6)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        if (_BodyMasses[i] <= 0) continue;
+                        
+                        float3 toBody = _Bodies[i].xyz - pos;
+                        float r_dist = length(toBody);
+                        if (r_dist < 0.0001) continue;
+
+                        float rs_km = (2.0 * G_REAL * _BodyMasses[i]) / (C_REAL * C_REAL) / 1000.0;
+                        float r_dist2 = r_dist * r_dist;
+                        float r_dist3 = r_dist2 * r_dist;
+                        
+                        if (_Metric == 0) {
+                            accel += toBody * (rs_km * 0.5) / r_dist3;
+                        } else {
+                            float r_dist5 = r_dist3 * r_dist2;
+                            float3 h_vec = cross(-toBody, v);
+                            accel += toBody * (1.5 * rs_km * dot(h_vec, h_vec)) / r_dist5;
+                        }
+                    }
+                    return accel;
+                }
+
                 float3 toSphere = _SpherePos - pos;
                 float r_dist = length(toSphere);
                 if (r_dist < 0.0001) return float3(0, 0, 0);
@@ -236,8 +320,6 @@ Shader "Custom/RayTracingRelativistic"
                 float r_dist2 = r_dist * r_dist;
                 float r_dist3 = r_dist2 * r_dist;
                 float r_dist5 = r_dist3 * r_dist2;
-
-                float3 accel = float3(0, 0, 0);
 
                 if (_Metric == 0)
                 {
@@ -371,6 +453,23 @@ Shader "Custom/RayTracingRelativistic"
                         finalRayDir = ray.dir;
                         return black;
                     }
+
+                    // Cena 6 celestial body trapping
+                    if (_CurrentScene == 6)
+                    {
+                        for (int body = 0; body < 10; body++)
+                        {
+                            if (length(_Bodies[body].xyz - ray.origin) < _Bodies[body].w * 0.5)
+                            {
+                                HitInfo black = (HitInfo)0;
+                                black.didHit = true;
+                                black.dst = 0.0;
+                                black.colour = float3(0, 0, 0);
+                                finalRayDir = ray.dir;
+                                return black;
+                            }
+                        }
+                    }
                     
                     if (_Integrator == 1)
                         StepRK4(ray.origin, ray.dir, _StepSize);
@@ -388,10 +487,13 @@ Shader "Custom/RayTracingRelativistic"
 
             float3 GetSkyColor(float3 direction, int useUniverse)
             {
+                if (_CurrentScene == 6 && _UseMilkyWay == 1)
+                {
+                    return texCUBE(_MilkyWayTex, direction).rgb;
+                }
                 if (useUniverse == 1)
                 {
-                    // Added 0.67 multiplier to match GLSL SKYBOX_BRIGHTNESS
-                    return texCUBE(_SkyboxTexture, direction).rgb;// * 0.67;
+                    return texCUBE(_SkyboxTexture, direction).rgb;
                 }
                 else
                 {

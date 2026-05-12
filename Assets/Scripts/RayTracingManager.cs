@@ -86,6 +86,8 @@ public class RayTracingManager : MonoBehaviour
             needsCameraUpdate = true;
         }
 
+        UpdateSolarSystem();
+
         // Atalhos para visão relativística
         if (Input.GetKeyDown(KeyCode.H))
         {
@@ -197,6 +199,62 @@ public class RayTracingManager : MonoBehaviour
 
     [Header("Scene Selection")] public int currentScene = 1;
 
+    [Header("Cena 6 - Sistema Solar")]
+    [SerializeField] float systemTimeMultiplier = 0f;
+    [SerializeField] float baseBlackHoleMass = 1.989e30f * 10f;
+    [SerializeField] Cubemap milkyWaySkybox;
+    
+    [SerializeField] Texture2D[] solarSystemTextures = new Texture2D[10];
+    
+    [SerializeField] float[] planetOrbitalOffsets = new float[10];
+    
+    private Vector4[] bodyPositionsAndRadii = new Vector4[10];
+    private float[] bodyMasses = new float[10];
+    private float systemCurrentTime = 0f;
+
+    void UpdateSolarSystem()
+    {
+        if (currentScene != 6) return;
+
+        systemCurrentTime += Time.deltaTime * systemTimeMultiplier;
+
+        float[] baseRadii = { 5.0f, 0.3f, 0.7f, 0.8f, 0.2f, 0.4f, 2.5f, 2.0f, 1.5f, 1.4f };
+        float[] distances = { 0.0f, 10f, 18f, 28f, 2.5f, 40f, 65f, 95f, 125f, 150f };
+        float[] orbitSpeeds = { 0.0f, 4.1f, 1.6f, 1.0f, 13.3f, 0.5f, 0.08f, 0.03f, 0.01f, 0.005f };
+        float[] massPercentages = { 1.0f, 0.005f, 0.008f, 0.01f, 0.001f, 0.005f, 0.1f, 0.08f, 0.04f, 0.03f };
+
+        Vector3 sunPos = new Vector3(0, 0, -150f);
+
+        for (int i = 0; i < 10; i++)
+        {
+            Vector3 pos;
+            if (i == 0)
+            {
+                pos = sunPos;
+            }
+            else if (i == 4)
+            {
+                float offset = planetOrbitalOffsets[i] * Mathf.Deg2Rad;
+                float earthOffset = planetOrbitalOffsets[3] * Mathf.Deg2Rad;
+                float earthX = sunPos.x + Mathf.Cos(systemCurrentTime * orbitSpeeds[3] + earthOffset) * distances[3];
+                float earthZ = sunPos.z + Mathf.Sin(systemCurrentTime * orbitSpeeds[3] + earthOffset) * distances[3];
+                pos = new Vector3(earthX, 0, earthZ);
+                pos.x += Mathf.Cos(systemCurrentTime * orbitSpeeds[i] + offset) * distances[i];
+                pos.z += Mathf.Sin(systemCurrentTime * orbitSpeeds[i] + offset) * distances[i];
+            }
+            else
+            {
+                float offset = planetOrbitalOffsets[i] * Mathf.Deg2Rad;
+                pos.x = sunPos.x + Mathf.Cos(systemCurrentTime * orbitSpeeds[i] + offset) * distances[i];
+                pos.y = sunPos.y;
+                pos.z = sunPos.z + Mathf.Sin(systemCurrentTime * orbitSpeeds[i] + offset) * distances[i];
+            }
+
+            bodyPositionsAndRadii[i] = new Vector4(pos.x, pos.y, pos.z, baseRadii[i]);
+            bodyMasses[i] = baseBlackHoleMass * massPercentages[i];
+        }
+    }
+
     void SetShaderParams()
     {
         rayTracingMaterial.SetVector("_LightDirection", lightDirection.normalized);
@@ -212,6 +270,20 @@ public class RayTracingManager : MonoBehaviour
         rayTracingMaterial.SetInt("_CurrentScene", currentScene);
         
         SetupSkyboxTexture();
+
+        if (currentScene == 6)
+        {
+            rayTracingMaterial.SetVectorArray("_Bodies", bodyPositionsAndRadii);
+            rayTracingMaterial.SetFloatArray("_BodyMasses", bodyMasses);
+            rayTracingMaterial.SetInt("_UseMilkyWay", milkyWaySkybox != null ? 1 : 0);
+            if (milkyWaySkybox != null) rayTracingMaterial.SetTexture("_MilkyWayTex", milkyWaySkybox);
+            
+            for (int i = 0; i < 10; i++)
+            {
+                if (solarSystemTextures.Length > i && solarSystemTextures[i] != null)
+                    rayTracingMaterial.SetTexture("_PlanetTex" + i, solarSystemTextures[i]);
+            }
+        }
     }
 
     void SetupSkyboxTexture()
@@ -316,5 +388,22 @@ public class RayTracingManager : MonoBehaviour
     public void ForceCameraUpdate()
     {
         needsCameraUpdate = true;
+    }
+
+    public void SetPlanetOrbitalOffset(int bodyIndex, float degrees)
+    {
+        if (bodyIndex >= 0 && bodyIndex < 10)
+        {
+            planetOrbitalOffsets[bodyIndex] = degrees;
+        }
+    }
+
+    public float GetPlanetOrbitalOffset(int bodyIndex)
+    {
+        if (bodyIndex >= 0 && bodyIndex < 10)
+        {
+            return planetOrbitalOffsets[bodyIndex];
+        }
+        return 0f;
     }
 }
