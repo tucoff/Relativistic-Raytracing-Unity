@@ -13,7 +13,7 @@ public class RayTracingManager : MonoBehaviour
     
     [Header("Relativistic View Settings")]
     [SerializeField] bool useRelativisticView = false;
-    [SerializeField, Min(0.001f)] float stepSize = 10f;
+    [SerializeField, Min(0.001f)] public float stepSize = 10f;
     [SerializeField, Min(1)] int maxSteps = 1000;
     
     [Header("Point Mode Settings")]
@@ -195,13 +195,13 @@ public class RayTracingManager : MonoBehaviour
     [Header("Relativistic Physics")]
     public Metric selectedMetric = Metric.Schwarzschild;
     public Integrator selectedIntegrator = Integrator.Euler;
-    [SerializeField] float spinSpeed = 0.5f;
+    public float spinSpeed = 0.5f;
 
     [Header("Scene Selection")] public int currentScene = 1;
 
     [Header("Cena 6 - Sistema Solar")]
     [SerializeField] float systemTimeMultiplier = 0f;
-    [SerializeField] float baseBlackHoleMass = 1.989e30f * 10f;
+    public float baseBlackHoleMass = 1.989e30f * 10f;
     [SerializeField] Cubemap milkyWaySkybox;
     
     [SerializeField] Texture2D[] solarSystemTextures = new Texture2D[10];

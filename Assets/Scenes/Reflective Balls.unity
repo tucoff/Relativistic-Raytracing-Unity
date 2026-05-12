@@ -794,13 +794,14 @@ GameObject:
   m_Component:
   - component: {fileID: 478022932}
   - component: {fileID: 478022931}
+  - component: {fileID: 478022933}
   m_Layer: 0
   m_Name: Benchmark Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &478022931
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -814,7 +815,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BenchmarkAutomator
   manager: {fileID: 1240796226}
-  resolutionsH: 90000000e0010000d002000038040000
+  benchmarkConfig: {fileID: 478022933}
 --- !u!4 &478022932
 Transform:
   m_ObjectHideFlags: 0
@@ -830,6 +831,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &478022933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478022930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576283e5bda0c084abbfd1fe1722f243, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BenchmarkConfiguration
+  stepSizePresets:
+  - name: SmallStep
+    value: 1
+  - name: MediumStep
+    value: 10
+  - name: BigStep
+    value: 20
+  gravityPresets:
+  - name: NormalG
+    value: 1.989e+31
+  - name: StrongG
+    value: 3.978e+31
+  - name: MuchStrongerG
+    value: 5.967e+31
+  spinSpeedPresets:
+  - name: NormalSS
+    value: 0.5
+  - name: FastSS
+    value: 50
+  - name: MuchFasterSS
+    value: 500
+  sceneCameraConfigs:
+  - sceneId: 0
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 1
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 2
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 3
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 4
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 5
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  - sceneId: 6
+    cameras:
+    - name: Front
+      position: {x: 0, y: 0, z: 666}
+      rotation: {x: 0, y: 180, z: 0}
+  resolutionsH: 90000000e0010000d002000038040000
+  resolutionsW: 00010000550300000005000080070000
+  benchmarkDurationPerConfig: 5
+  maxSteps: 1000
 --- !u!4 &522496939 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2407461528718686601, guid: 740232c549ee3bca98aea2ba532b5b01, type: 3}

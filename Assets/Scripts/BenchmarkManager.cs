@@ -1,18 +1,15 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 public class BenchmarkAutomator : MonoBehaviour
 {
     [Header("Referências")]
     public RayTracingManager manager;
+    public BenchmarkConfiguration benchmarkConfig;
 
-    [Header("Configurações do Loop")]
-    public int[] resolutionsH = { 144, 480, 720, 1080 };
-    private int[] resolutionsW = { 256, 853, 1280, 1920 };
-
-    private Vector3 targetPos = new Vector3(0f, 0f, 666f);
-    private Vector3 targetRot = new Vector3(0f, 180f, 0f);
+    private bool useConfigPresets = true;
 
     void Start()
     {
@@ -23,57 +20,113 @@ public class BenchmarkAutomator : MonoBehaviour
         string folderPath = Path.Combine(Application.dataPath, "../Benchmarks");
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
+        if (benchmarkConfig == null)
+        {
+            benchmarkConfig = FindObjectOfType<BenchmarkConfiguration>();
+        }
+
         if (manager != null)
         {
             manager.enableFirstPersonControls = false;
             manager.SetRelativisticView(true);
-            StartCoroutine(RunHardcodedBenchmark());
+            StartCoroutine(RunConfigurableBenchmark());
         }
     }
 
-    IEnumerator RunHardcodedBenchmark()
+    IEnumerator RunConfigurableBenchmark()
     {
-        Debug.Log(">>> BENCHMARK INICIADO <<<");
+        Debug.Log(">>> BENCHMARK INICIADO COM CONFIGURAÇÕES <<<");
+
+        BenchmarkConfiguration config = benchmarkConfig ?? FindObjectOfType<BenchmarkConfiguration>();
+        if (config == null)
+        {
+            Debug.LogError("BenchmarkConfiguration não encontrada!");
+            yield break;
+        }
+
+        int[] resolutionsH = config.resolutionsH;
+        int[] resolutionsW = config.resolutionsW;
 
         for (int r = 0; r < resolutionsH.Length; r++)
         {
             int w = resolutionsW[r];
             int h = resolutionsH[r];
 
-            // 1. Aplica Resolução (No .exe isso redimensiona a janela)
+            // 1. Aplica Resolução
             Screen.SetResolution(w, h, false);
-            yield return new WaitForSeconds(1f); // Respiro curto para o driver de vídeo
+            yield return new WaitForSeconds(1f);
 
             foreach (RayTracingManager.Metric m in System.Enum.GetValues(typeof(RayTracingManager.Metric)))
             {
                 foreach (RayTracingManager.Integrator i in System.Enum.GetValues(typeof(RayTracingManager.Integrator)))
                 {
-                    for (int sceneID = 1; sceneID <= 5; sceneID++)
+                    for (int sceneID = 1; sceneID <= 6; sceneID++)
                     {
-                        // Configura a cena e câmera
-                        Camera.main.transform.position = targetPos;
-                        Camera.main.transform.rotation = Quaternion.Euler(targetRot);
-                        manager.selectedMetric = m;
-                        manager.selectedIntegrator = i;
-                        manager.currentScene = sceneID;
-                        manager.ForceCameraUpdate();
-
-                        // 2. LOOP DE MÉDIA (5 SEGUNDOS)
-                        float duration = 5f;
-                        float elapsed = 0f;
-                        int frameCount = 0;
-
-                        while (elapsed < duration)
+                        // Obtém configuração de câmeras para esta cena
+                        SceneCameraConfig sceneCamConfig = config.GetSceneCameraConfig(sceneID);
+                        if (sceneCamConfig == null || sceneCamConfig.cameras.Count == 0)
                         {
-                            elapsed += Time.unscaledDeltaTime;
-                            frameCount++;
-                            yield return null; // Espera o próximo frame
+                            Debug.LogWarning($"Nenhuma configuração de câmera para cena {sceneID}");
+                            continue;
                         }
 
-                        float averageFps = frameCount / elapsed;
+                        // Loop através de cada preset de câmera
+                        for (int camIdx = 0; camIdx < sceneCamConfig.cameras.Count; camIdx++)
+                        {
+                            CameraPreset cameraPreset = sceneCamConfig.cameras[camIdx];
 
-                        // 3. CAPTURA E SALVA
-                        CaptureAndSave(w, h, averageFps, m.ToString(), i.ToString(), sceneID);
+                            // Loop através de cada preset de Step Size
+                            for (int stepIdx = 0; stepIdx < config.stepSizePresets.Count; stepIdx++)
+                            {
+                                StepSizePreset stepPreset = config.stepSizePresets[stepIdx];
+
+                                // Loop através de cada preset de Gravidade
+                                for (int gravIdx = 0; gravIdx < config.gravityPresets.Count; gravIdx++)
+                                {
+                                    GravityPreset gravityPreset = config.gravityPresets[gravIdx];
+
+                                    // Loop através de cada preset de Spin Speed
+                                    for (int spinIdx = 0; spinIdx < config.spinSpeedPresets.Count; spinIdx++)
+                                    {
+                                        SpinSpeedPreset spinPreset = config.spinSpeedPresets[spinIdx];
+
+                                        // Configura tudo
+                                        Camera.main.transform.position = cameraPreset.position;
+                                        Camera.main.transform.rotation = Quaternion.Euler(cameraPreset.rotation);
+                                        manager.selectedMetric = m;
+                                        manager.selectedIntegrator = i;
+                                        manager.currentScene = sceneID;
+                                        manager.stepSize = stepPreset.value;
+                                        manager.baseBlackHoleMass = gravityPreset.value;
+                                        manager.spinSpeed = spinPreset.value;
+                                        manager.ForceCameraUpdate();
+
+                                        // 2. LOOP DE MÉDIA
+                                        float duration = config.benchmarkDurationPerConfig;
+                                        float elapsed = 0f;
+                                        int frameCount = 0;
+
+                                        while (elapsed < duration)
+                                        {
+                                            elapsed += Time.unscaledDeltaTime;
+                                            frameCount++;
+                                            yield return null;
+                                        }
+
+                                        float averageFps = frameCount / elapsed;
+
+                                        // 3. CAPTURA E SALVA
+                                        string cameraName = cameraPreset.name.Replace(" ", "");
+                                        string stepName = stepPreset.name.Replace(" ", "");
+                                        string gravName = gravityPreset.name.Replace(" ", "");
+                                        string spinName = spinPreset.name.Replace(" ", "");
+
+                                        CaptureAndSave(w, h, averageFps, m.ToString(), i.ToString(), sceneID,
+                                            cameraName, stepName, gravName, spinName);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -83,7 +136,8 @@ public class BenchmarkAutomator : MonoBehaviour
         manager.enableFirstPersonControls = true;
     }
 
-    void CaptureAndSave(int w, int h, float avgFps, string metric, string integrator, int sceneId)
+    void CaptureAndSave(int w, int h, float avgFps, string metric, string integrator, int sceneId,
+        string camera, string stepSize, string gravity, string spinSpeed)
     {
         // Cria buffer de renderização na resolução correta
         RenderTexture rt = new RenderTexture(w, h, 24);
@@ -106,7 +160,7 @@ public class BenchmarkAutomator : MonoBehaviour
 
         // Salva arquivo com a média no nome
         byte[] bytes = screenShot.EncodeToPNG();
-        string fileName = $"{avgFps:F1}AVG_FPS_{metric}_{integrator}_S{sceneId}_{h}p.png";
+        string fileName = $"{avgFps:F1}FPS_{metric}_{integrator}_S{sceneId}_{camera}_{stepSize}_{gravity}_{spinSpeed}_{h}p.png";
         string path = Path.Combine(Application.dataPath, "../Benchmarks", fileName);
 
         File.WriteAllBytes(path, bytes);
