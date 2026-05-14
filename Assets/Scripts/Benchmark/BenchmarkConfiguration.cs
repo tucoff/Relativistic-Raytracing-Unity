@@ -75,21 +75,21 @@ public class BenchmarkConfiguration : MonoBehaviour
     }
 
     private void InitializeDefaultPresets()
-    { 
+    {
         if (stepSizePresets.Count == 0)
         {
             stepSizePresets.Add(new StepSizePreset { name = "SmallStep", value = 1f });
             stepSizePresets.Add(new StepSizePreset { name = "MediumStep", value = 52f });
             stepSizePresets.Add(new StepSizePreset { name = "BigStep", value = 260f });
         }
-         
+
         if (gravityPresets.Count == 0)
         {
             gravityPresets.Add(new GravityPreset { name = "NormalG", value = 1.989e31f });
             gravityPresets.Add(new GravityPreset { name = "StrongG", value = 3.978e31f });
             gravityPresets.Add(new GravityPreset { name = "MuchStrongerG", value = 5.967e31f });
         }
-         
+
         if (spinSpeedPresets.Count == 0)
         {
             spinSpeedPresets.Add(new SpinSpeedPreset { name = "NaturalSpinSpeed", value = 0.5f });
@@ -97,54 +97,33 @@ public class BenchmarkConfiguration : MonoBehaviour
             spinSpeedPresets.Add(new SpinSpeedPreset { name = "StrongSpinSpeed", value = 50f });
             spinSpeedPresets.Add(new SpinSpeedPreset { name = "FunnySpinSpeed", value = 200f });
         }
-         
+
         if (sceneCameraConfigs.Count == 0)
         {
             for (int sceneId = 0; sceneId <= 6; sceneId++)
             {
                 SceneCameraConfig config = new SceneCameraConfig { sceneId = sceneId };
-                 
-                config.cameras.Add(new CameraPreset
-                {
-                    name = "Front",
-                    position = new Vector3(0f, 0f, 666f),
-                    rotation = new Vector3(0f, 180f, 0f)
-                });
 
-                config.cameras.Add(new CameraPreset
+                if (sceneId == 6)
                 {
-                    name = "Periferic",
-                    position = new Vector3(-140f, 0f, -360f),
-                    rotation = new Vector3(0f, 66f, 0f)
-                });
-
-                config.cameras.Add(new CameraPreset
+                    // Values perfectly mapped from the 6 Transform images provided
+                    config.cameras.Add(new CameraPreset { name = "CamPos1", position = new Vector3(83f, -4f, 30f), rotation = new Vector3(0f, 240f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "CamPos2", position = new Vector3(100f, 0f, 235f), rotation = new Vector3(0f, 170f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "CamPos3", position = new Vector3(300f, 0f, 800f), rotation = new Vector3(0f, 116f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "CamPos4", position = new Vector3(150f, -200f, -100f), rotation = new Vector3(-60f, -20f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "CamPos5", position = new Vector3(125f, -2f, -30f), rotation = new Vector3(1f, 25f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "CamPos6", position = new Vector3(100f, 2.2f, 45f), rotation = new Vector3(-0.3f, 90f, 0f) });
+                }
+                else
                 {
-                    name = "Above",
-                    position = new Vector3(0f, 180f, -150f),
-                    rotation = new Vector3(90f, 0f, 0f)
-                });
-
-                config.cameras.Add(new CameraPreset
-                {
-                    name = "Diagonal",
-                    position = new Vector3(-70f, 70f, -400f),
-                    rotation = new Vector3(15f, 15f, 0f)
-                });
-
-                config.cameras.Add(new CameraPreset
-                {
-                    name = "Tangent",
-                    position = new Vector3(0f, 0f, -180f),
-                    rotation = new Vector3(0f, 90f, 0f)
-                });
-
-                config.cameras.Add(new CameraPreset
-                {
-                    name = "LookAway",
-                    position = new Vector3(0f, 0f, -200f),
-                    rotation = new Vector3(0f, 180f, 0f)
-                });
+                    // Original Default Cameras for Scenes 0-5
+                    config.cameras.Add(new CameraPreset { name = "Front", position = new Vector3(0f, 0f, 666f), rotation = new Vector3(0f, 180f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "Periferic", position = new Vector3(-140f, 0f, -360f), rotation = new Vector3(0f, 66f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "Above", position = new Vector3(0f, 180f, -150f), rotation = new Vector3(90f, 0f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "Diagonal", position = new Vector3(-70f, 70f, -400f), rotation = new Vector3(15f, 15f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "Tangent", position = new Vector3(0f, 0f, -180f), rotation = new Vector3(0f, 90f, 0f) });
+                    config.cameras.Add(new CameraPreset { name = "LookAway", position = new Vector3(0f, 0f, -200f), rotation = new Vector3(0f, 180f, 0f) });
+                }
 
                 sceneCameraConfigs.Add(config);
             }

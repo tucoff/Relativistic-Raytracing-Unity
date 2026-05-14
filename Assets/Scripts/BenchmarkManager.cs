@@ -7,16 +7,16 @@ public class BenchmarkAutomator : MonoBehaviour
 {
     [Header("Referências")]
     public RayTracingManager manager;
-    public BenchmarkConfiguration benchmarkConfig; 
+    public BenchmarkConfiguration benchmarkConfig;
 
     void Start()
-    { 
+    {
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 9999;
 
         string folderPath = Path.Combine(Application.dataPath, "../Benchmarks");
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-         
+
         BenchmarkCSVExporter.InitializeCSV();
 
         if (benchmarkConfig == null)
@@ -50,7 +50,7 @@ public class BenchmarkAutomator : MonoBehaviour
         {
             int w = resolutionsW[r];
             int h = resolutionsH[r];
-             
+
             Screen.SetResolution(w, h, false);
             yield return new WaitForSeconds(1f);
 
@@ -59,27 +59,40 @@ public class BenchmarkAutomator : MonoBehaviour
                 foreach (RayTracingManager.Integrator i in System.Enum.GetValues(typeof(RayTracingManager.Integrator)))
                 {
                     for (int sceneID = 1; sceneID <= 6; sceneID++)
-                    { 
+                    {
                         SceneCameraConfig sceneCamConfig = config.GetSceneCameraConfig(sceneID);
                         if (sceneCamConfig == null || sceneCamConfig.cameras.Count == 0)
                         {
                             Debug.LogWarning($"Nenhuma configuração de câmera para cena {sceneID}");
                             continue;
                         }
-                         
+
                         for (int camIdx = 0; camIdx < sceneCamConfig.cameras.Count; camIdx++)
                         {
                             CameraPreset cameraPreset = sceneCamConfig.cameras[camIdx];
-                             
+
                             int maxStepIdx = (i == RayTracingManager.Integrator.RK4) ? 1 : config.stepSizePresets.Count;
                             for (int stepIdx = 0; stepIdx < maxStepIdx; stepIdx++)
                             {
                                 StepSizePreset stepPreset = config.stepSizePresets[stepIdx];
 
-                                for (int gravIdx = 0; gravIdx < config.gravityPresets.Count; gravIdx++)
+                                // Use custom gravity presets just for Scene 6
+                                List<GravityPreset> currentGravities = config.gravityPresets;
+                                if (sceneID == 6)
                                 {
-                                    GravityPreset gravityPreset = config.gravityPresets[gravIdx];
-                                     
+                                    currentGravities = new List<GravityPreset>
+                                    {
+                                        new GravityPreset { name = "Grav_1.989e31", value = 1.989e+31f },
+                                        new GravityPreset { name = "Grav_1.989e32", value = 1.989e+32f },
+                                        new GravityPreset { name = "Grav_1.989e33", value = 1.989e+33f },
+                                        new GravityPreset { name = "Grav_1.989e34", value = 1.989e+34f }
+                                    };
+                                }
+
+                                for (int gravIdx = 0; gravIdx < currentGravities.Count; gravIdx++)
+                                {
+                                    GravityPreset gravityPreset = currentGravities[gravIdx];
+
                                     int maxSpinIdx = (m == RayTracingManager.Metric.Kerr) ? config.spinSpeedPresets.Count : 1;
                                     for (int spinIdx = 0; spinIdx < maxSpinIdx; spinIdx++)
                                     {
@@ -94,7 +107,7 @@ public class BenchmarkAutomator : MonoBehaviour
                                         manager.baseBlackHoleMass = gravityPreset.value;
                                         manager.spinSpeed = spinPreset.value;
                                         manager.ForceCameraUpdate();
-                                         
+
                                         float duration = config.benchmarkDurationPerConfig;
                                         float elapsed = 0f;
                                         int frameCount = 0;
@@ -107,7 +120,7 @@ public class BenchmarkAutomator : MonoBehaviour
                                         }
 
                                         float averageFps = frameCount / elapsed;
-                                         
+
                                         string cameraName = cameraPreset.name.Replace(" ", "");
                                         string stepName = stepPreset.name.Replace(" ", "");
                                         string gravName = gravityPreset.name.Replace(" ", "");
@@ -130,14 +143,14 @@ public class BenchmarkAutomator : MonoBehaviour
 
     void CaptureAndSave(int w, int h, float avgFps, string metric, string integrator, int sceneId,
         string cameraPresetName, string stepPresetName, string gravityPresetName, string spinPresetName)
-    { 
+    {
         BenchmarkConfiguration config = benchmarkConfig ?? FindFirstObjectByType<BenchmarkConfiguration>();
         SceneCameraConfig sceneCamConfig = config?.GetSceneCameraConfig(sceneId);
         CameraPreset cameraPreset = null;
         StepSizePreset stepPreset = null;
         GravityPreset gravityPreset = null;
         SpinSpeedPreset spinPreset = null;
-         
+
         if (sceneCamConfig != null)
         {
             foreach (var preset in sceneCamConfig.cameras)
@@ -168,6 +181,15 @@ public class BenchmarkAutomator : MonoBehaviour
             }
         }
 
+        // Fallback for dynamically generated custom Scene 6 gravities
+        if (gravityPreset == null && sceneId == 6)
+        {
+            if (gravityPresetName == "Grav_1.989e31") gravityPreset = new GravityPreset { name = "Grav_1.989e31", value = 1.989e+31f };
+            else if (gravityPresetName == "Grav_1.989e32") gravityPreset = new GravityPreset { name = "Grav_1.989e32", value = 1.989e+32f };
+            else if (gravityPresetName == "Grav_1.989e33") gravityPreset = new GravityPreset { name = "Grav_1.989e33", value = 1.989e+33f };
+            else if (gravityPresetName == "Grav_1.989e34") gravityPreset = new GravityPreset { name = "Grav_1.989e34", value = 1.989e+34f };
+        }
+
         foreach (var spin in config.spinSpeedPresets)
         {
             if (spin.name.Replace(" ", "") == spinPresetName)
@@ -176,30 +198,30 @@ public class BenchmarkAutomator : MonoBehaviour
                 break;
             }
         }
-         
+
         RenderTexture rt = new RenderTexture(w, h, 24);
         Camera cam = Camera.main;
 
         RenderTexture oldRT = cam.targetTexture;
         cam.targetTexture = rt;
         cam.Render();
-         
+
         Texture2D screenShot = new Texture2D(w, h, TextureFormat.RGB24, false);
         RenderTexture.active = rt;
         screenShot.ReadPixels(new Rect(0, 0, w, h), 0, 0);
         screenShot.Apply();
-         
+
         cam.targetTexture = oldRT;
         RenderTexture.active = null;
         Destroy(rt);
-         
+
         byte[] bytes = screenShot.EncodeToPNG();
         string fileName = $"{avgFps:F1}FPS_{metric}_{integrator}_S{sceneId}_{cameraPresetName}_{stepPresetName}_{gravityPresetName}_{spinPresetName}_{h}p.png";
         string path = Path.Combine(Application.dataPath, "../Benchmarks", fileName);
 
         File.WriteAllBytes(path, bytes);
         Destroy(screenShot);
-         
+
         if (cameraPreset != null && stepPreset != null && gravityPreset != null && spinPreset != null)
         {
             float duration = config.benchmarkDurationPerConfig;
