@@ -27,8 +27,122 @@ public class BenchmarkAutomator : MonoBehaviour
         if (manager != null)
         {
             manager.enableFirstPersonControls = false;
-            manager.SetRelativisticView(true);
-            StartCoroutine(RunConfigurableBenchmark());
+            manager.SetRelativisticView(false);
+            StartCoroutine(RunBaselineAndBenchmark());
+        }
+    }
+
+    IEnumerator RunBaselineAndBenchmark()
+    {
+        Debug.Log(">>> FASE 1: CAPTURA DE BASELINE (MODO NÃO-RELATIVÍSTICO) <<<");
+        yield return StartCoroutine(CaptureBaselineScreenshots());
+
+        Debug.Log(">>> FASE 2: BENCHMARK COMPLETO (MODO RELATIVÍSTICO) <<<");
+        manager.SetRelativisticView(true);
+        yield return StartCoroutine(RunConfigurableBenchmark());
+
+        Debug.Log(">>> BENCHMARK CONCLUÍDO! <<<");
+        manager.enableFirstPersonControls = true;
+    }
+
+    IEnumerator CaptureBaselineScreenshots()
+    {
+        BenchmarkConfiguration config = benchmarkConfig ?? FindFirstObjectByType<BenchmarkConfiguration>();
+        if (config == null)
+        {
+            Debug.LogError("BenchmarkConfiguration não encontrada!");
+            yield break;
+        }
+
+        int[] resolutionsH = config.resolutionsH;
+        int[] resolutionsW = config.resolutionsW;
+
+        for (int r = 0; r < resolutionsH.Length; r++)
+        {
+            int w = resolutionsW[r];
+            int h = resolutionsH[r];
+
+            Screen.SetResolution(w, h, false);
+            yield return new WaitForSeconds(2f);
+
+            for (int sceneID = 1; sceneID <= 6; sceneID++)
+            {
+                SceneCameraConfig sceneCamConfig = config.GetSceneCameraConfig(sceneID);
+
+                for (int camIdx = 0; camIdx < sceneCamConfig.cameras.Count; camIdx++)
+                {
+                    CameraPreset cameraPreset = sceneCamConfig.cameras[camIdx];
+                    
+                    Camera.main.transform.position = cameraPreset.position;
+                    Camera.main.transform.rotation = Quaternion.Euler(cameraPreset.rotation);
+                    manager.currentScene = sceneID;
+                    manager.ForceCameraUpdate();
+                    
+                    float duration = config.benchmarkDurationPerConfig;
+                    float elapsed = 0f;
+                    int frameCount = 0;
+
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.unscaledDeltaTime;
+                        frameCount++;
+                        yield return null;
+                    }
+
+                    float averageFps = frameCount / elapsed;
+                    CaptureBaselineScreenshot(w, h, sceneID, cameraPreset.name, averageFps);
+                }
+            }
+        }
+
+        Debug.Log(">>> FASE 1 CONCLUÍDA: Baseline screenshots capturados <<<");
+    }
+
+    void CaptureBaselineScreenshot(int w, int h, int sceneID, string cameraPresetName, float avgFps)
+    {
+        RenderTexture rt = new RenderTexture(w, h, 24);
+        Camera cam = Camera.main;
+
+        RenderTexture oldRT = cam.targetTexture;
+        cam.targetTexture = rt;
+        cam.Render();
+
+        Texture2D screenShot = new Texture2D(w, h, TextureFormat.RGB24, false);
+        RenderTexture.active = rt;
+        screenShot.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+        screenShot.Apply();
+
+        cam.targetTexture = oldRT;
+        RenderTexture.active = null;
+        Destroy(rt);
+
+        byte[] bytes = screenShot.EncodeToPNG();
+        string cameraName = cameraPresetName.Replace(" ", "");
+        string fileName = $"BASELINE_{avgFps:F1}FPS_NonRelativistic_S{sceneID}_{cameraName}_{h}p.png";
+        string path = Path.Combine(Application.dataPath, "../Benchmarks", fileName);
+
+        File.WriteAllBytes(path, bytes);
+        Destroy(screenShot);
+
+        AppendBaselineData(w, h, sceneID, cameraName, avgFps);
+        Debug.Log($"Baseline capturado: {fileName}");
+    }
+
+    void AppendBaselineData(int w, int h, int sceneID, string cameraName, float avgFps)
+    {
+        BenchmarkConfiguration config = benchmarkConfig ?? FindFirstObjectByType<BenchmarkConfiguration>();
+        
+        string csvPath = Path.Combine(Application.dataPath, "../Benchmarks", "Baseline_Results.csv");
+        bool fileExists = File.Exists(csvPath);
+
+        using (StreamWriter writer = new StreamWriter(csvPath, true))
+        {
+            if (!fileExists)
+            {
+                writer.WriteLine("Resolution_W,Resolution_H,Scene_ID,Camera_Name,Average_FPS");
+            }
+
+            writer.WriteLine($"{w},{h},{sceneID},{cameraName},{avgFps:F2}");
         }
     }
 
@@ -52,7 +166,7 @@ public class BenchmarkAutomator : MonoBehaviour
             int h = resolutionsH[r];
 
             Screen.SetResolution(w, h, false);
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(2f);
 
             foreach (RayTracingManager.Metric m in System.Enum.GetValues(typeof(RayTracingManager.Metric)))
             {
@@ -61,11 +175,6 @@ public class BenchmarkAutomator : MonoBehaviour
                     for (int sceneID = 1; sceneID <= 6; sceneID++)
                     {
                         SceneCameraConfig sceneCamConfig = config.GetSceneCameraConfig(sceneID);
-                        if (sceneCamConfig == null || sceneCamConfig.cameras.Count == 0)
-                        {
-                            Debug.LogWarning($"Nenhuma configuração de câmera para cena {sceneID}");
-                            continue;
-                        }
 
                         for (int camIdx = 0; camIdx < sceneCamConfig.cameras.Count; camIdx++)
                         {
@@ -75,8 +184,7 @@ public class BenchmarkAutomator : MonoBehaviour
                             for (int stepIdx = 0; stepIdx < maxStepIdx; stepIdx++)
                             {
                                 StepSizePreset stepPreset = config.stepSizePresets[stepIdx];
-
-                                // Use custom gravity presets just for Scene 6
+                                 
                                 List<GravityPreset> currentGravities = config.gravityPresets;
                                 if (sceneID == 6)
                                 {

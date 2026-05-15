@@ -82,7 +82,7 @@ public class RayTracingManager : MonoBehaviour
             needsCameraUpdate = true;
         }
 
-        UpdateSolarSystem();
+        //UpdateSolarSystem();
          
         if (Input.GetKeyDown(KeyCode.H))
         {

@@ -139,44 +139,34 @@ Shader "Custom/RayTracingRelativistic"
                     _UseUniverseSkybox = 1;
                 }
                 if (_CurrentScene == 6)
-                {
-                    // 0: Sun (primary star)
+                { 
                     _Bodies[0] = float4(0.0, 0.0, 0.0, 20.0);
                     _BodyMasses[0] = 1.989e30;
-    
-                    // 1: Mercury
+     
                     _Bodies[1] = float4(30.0, 0.0, 0.0, 2.0);
                     _BodyMasses[1] = 3.285e23;
-    
-                    // 2: Venus
+     
                     _Bodies[2] = float4(50.0, 5.0, 10.0, 3.5);
                     _BodyMasses[2] = 4.867e24;
-    
-                    // 3: Earth
+     
                     _Bodies[3] = float4(70.0, -3.0, 15.0, 3.7);
                     _BodyMasses[3] = 5.972e24;
-    
-                    // 4: Moon (Orbiting near Earth)
+     
                     _Bodies[4] = float4(76.0, -3.0, 15.0, 1.0); 
                     _BodyMasses[4] = 7.342e22;
-    
-                    // 5: Mars
+     
                     _Bodies[5] = float4(90.0, 4.0, 20.0, 2.8);
                     _BodyMasses[5] = 6.417e23;
-    
-                    // 6: Jupiter
+     
                     _Bodies[6] = float4(130.0, -8.0, 35.0, 12.0);
                     _BodyMasses[6] = 1.898e27;
-    
-                    // 7: Saturn
+     
                     _Bodies[7] = float4(170.0, 6.0, 50.0, 10.5);
                     _BodyMasses[7] = 5.683e26;
-    
-                    // 8: Uranus
+     
                     _Bodies[8] = float4(220.0, -5.0, 70.0, 8.0);
                     _BodyMasses[8] = 8.681e25;
-    
-                    // 9: Neptune
+     
                     _Bodies[9] = float4(270.0, 7.0, 90.0, 7.8);
                     _BodyMasses[9] = 1.024e26;
                 }
@@ -335,7 +325,8 @@ Shader "Custom/RayTracingRelativistic"
          
                         if (r_dist < 0.0001) continue;
                          
-                        float rs_km = (2.0 * G_REAL * _BodyMasses[i] * _GravityMultiplier) / (C_REAL * C_REAL) / 1000.0;
+                        float mass_ratio = _BodyMasses[i] / 1.989e30;
+                        float rs_visual = mass_ratio * _GravityMultiplier * 5.0;
         
                         float r_dist2 = r_dist * r_dist;
                         float r_dist3 = r_dist2 * r_dist;
@@ -343,22 +334,22 @@ Shader "Custom/RayTracingRelativistic"
         
                         if (_Metric == 0) 
                         { 
-                            accel += toBody * (rs_km * 0.5) / r_dist3;
+                            accel += toBody * (rs_visual * 0.5) / r_dist3;
                         } 
                         else if (_Metric == 1) 
                         { 
                             float3 h_vec = cross(-toBody, v);
-                            accel += toBody * (1.5 * rs_km * dot(h_vec, h_vec)) / r_dist5;
+                            accel += toBody * (1.5 * rs_visual * dot(h_vec, h_vec)) / r_dist5;
                         }
                         else 
                         { 
                             float3 r_vec = -toBody;
                             float3 h_vec = cross(r_vec, v);
              
-                            float3 a_schwarzschild = -r_vec * (1.5 * rs_km * dot(h_vec, h_vec)) / r_dist5;
+                            float3 a_schwarzschild = -r_vec * (1.5 * rs_visual * dot(h_vec, h_vec)) / r_dist5;
              
                             float currentSpinSpeed = _SpinSpeed * bodySpinMultipliers[i];
-                            float3 spin_vec = KERR_SPIN_AXIS * rs_km * currentSpinSpeed;
+                            float3 spin_vec = KERR_SPIN_AXIS * rs_visual * currentSpinSpeed;
             
                             float3 H = (2.0 / r_dist5) * (3.0 * r_vec * dot(spin_vec, r_vec) - spin_vec * r_dist2);
                             float3 a_frame_drag = -cross(v, H);
@@ -493,8 +484,7 @@ Shader "Custom/RayTracingRelativistic"
                     }
                    
                     if (_CurrentScene != 6)
-                    {
-                        // First Black Hole Trapping
+                    { 
                         if (length(_SpherePos - ray.origin) < _SphereRadius)
                         {
                             HitInfo black = (HitInfo)0;
@@ -504,8 +494,7 @@ Shader "Custom/RayTracingRelativistic"
                             finalRayDir = ray.dir;
                             return black;
                         }
-
-                        // Second Black Hole Trapping
+                         
                         if (_Sphere2Radius > 0.0 && length(_Sphere2Pos - ray.origin) < _Sphere2Radius)
                         {
                             HitInfo black = (HitInfo)0;

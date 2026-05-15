@@ -100,13 +100,12 @@ public class BenchmarkConfiguration : MonoBehaviour
 
         if (sceneCameraConfigs.Count == 0)
         {
-            for (int sceneId = 0; sceneId <= 6; sceneId++)
+            for (int sceneId = 1; sceneId <= 6; sceneId++)
             {
                 SceneCameraConfig config = new SceneCameraConfig { sceneId = sceneId };
 
                 if (sceneId == 6)
-                {
-                    // Values perfectly mapped from the 6 Transform images provided
+                { 
                     config.cameras.Add(new CameraPreset { name = "CamPos1", position = new Vector3(83f, -4f, 30f), rotation = new Vector3(0f, 240f, 0f) });
                     config.cameras.Add(new CameraPreset { name = "CamPos2", position = new Vector3(100f, 0f, 235f), rotation = new Vector3(0f, 170f, 0f) });
                     config.cameras.Add(new CameraPreset { name = "CamPos3", position = new Vector3(300f, 0f, 800f), rotation = new Vector3(0f, 116f, 0f) });
@@ -115,8 +114,7 @@ public class BenchmarkConfiguration : MonoBehaviour
                     config.cameras.Add(new CameraPreset { name = "CamPos6", position = new Vector3(100f, 2.2f, 45f), rotation = new Vector3(-0.3f, 90f, 0f) });
                 }
                 else
-                {
-                    // Original Default Cameras for Scenes 0-5
+                { 
                     config.cameras.Add(new CameraPreset { name = "Front", position = new Vector3(0f, 0f, 666f), rotation = new Vector3(0f, 180f, 0f) });
                     config.cameras.Add(new CameraPreset { name = "Periferic", position = new Vector3(-140f, 0f, -360f), rotation = new Vector3(0f, 66f, 0f) });
                     config.cameras.Add(new CameraPreset { name = "Above", position = new Vector3(0f, 180f, -150f), rotation = new Vector3(90f, 0f, 0f) });
