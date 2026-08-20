@@ -1,6 +1,27 @@
-MIT License
+MIT License with Academic Attribution Requirements
+
+===============================================================================
+ORIGINAL WORK COPYRIGHT
+===============================================================================
 
 Copyright (c) 2023 Sebastian Lague
+
+Original ray tracing implementation and Unity architecture.
+Original project: https://github.com/SebLague/Ray-Tracing
+
+===============================================================================
+EXTENDED WORK COPYRIGHT  
+===============================================================================
+
+Copyright (c) 2026 Artur Raffael Cavalcanti and Lucas Silva Figueiredo
+Universidade Federal Rural de Pernambuco
+
+Relativistic physics extensions, automated benchmarking system, and academic 
+research contributions presented at SIBGRAPI 2026.
+
+===============================================================================
+COMBINED LICENSE TERMS
+===============================================================================
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,13 +30,65 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+===============================================================================
+ATTRIBUTION REQUIREMENTS
+===============================================================================
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. ORIGINAL WORK ATTRIBUTION:
+   The above copyright notice for Sebastian Lague and this permission notice 
+   shall be included in all copies or substantial portions of the Software.
+   
+   Any use of the original ray tracing foundation must acknowledge:
+   "Based on Sebastian Lague's Ray Tracing implementation"
+   "Original project: https://github.com/SebLague/Ray-Tracing"
+
+2. ACADEMIC WORK ATTRIBUTION:
+   Any use, modification, or distribution that includes the relativistic 
+   physics extensions must acknowledge the academic research contribution:
+   
+   "Relativistic extensions developed for SIBGRAPI 2026 research"
+   
+   For academic citations, use:
+   ```
+   @inproceedings{relativistic_raytracer_2026,
+     title={Real-Time Relativistic Ray Tracing in Unity: A Comparative Study 
+            of Schwarzschild and Kerr Metrics},
+     author={Artur Raffael Cavalcanti and Lucas Silva Figueiredo},
+     booktitle={Proceedings of SIBGRAPI 2026},
+     year={2026},
+     organization={UFRPE}
+   }
+   ```
+
+3. RESEARCH INTEGRITY REQUIREMENTS:
+   
+   a) ACADEMIC USE: Any academic publication, thesis, dissertation, or research 
+      paper that uses this software or its concepts must:
+      - Cite both the original work (Sebastian Lague) and the academic 
+        extensions (SIBGRAPI 2026 research)
+      - Acknowledge the specific relativistic physics implementations
+      - Reference the benchmark methodology if used
+   
+   b) COMMERCIAL USE: Commercial applications may use this software but must:
+      - Include both copyright notices in documentation
+      - Acknowledge the academic research foundation
+      - Not claim original authorship of the relativistic physics algorithms
+   
+   c) DERIVATIVE RESEARCH: Any derivative academic work must:
+      - Clearly distinguish new contributions from existing work
+      - Maintain proper attribution chain
+      - Share improvements with the research community when published
+
+===============================================================================
+RESEARCH DATA AND METHODOLOGY PROTECTION
+===============================================================================
+
+4. BENCHMARK DATA PROTECTION:
+   The benchmark methodology, test configurations, and measurement techniques 
+   developed for this research are protected academic contributions. Any use 
+   of similar benchmark approaches should cite this work appropriately.
+
+5. PHYSICS IMPLEMENTATION PROTECTION:
+   The specific implementations of Schwarzschild and Kerr metrics, numerical 
+   integration methods, and relativistic ray marching algorithms represent 
+   novel academic contributions and should be cited when used or adapted.
