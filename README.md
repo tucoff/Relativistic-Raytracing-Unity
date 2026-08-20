@@ -235,29 +235,6 @@ Contributions are welcome! This project is particularly suited for:
 
 This project is licensed under the **MIT License with Academic Attribution Requirements** - see the [LICENSE](LICENSE) file for complete terms and the [Academic License Guide](ACADEMIC_LICENSE_GUIDE.md) for usage examples.
 
-### 🔐 License Summary
-- ✅ **Free for commercial and academic use**
-- ✅ **Modification and distribution allowed**
-- ✅ **Maintains MIT compatibility**
-- ⚠️ **Requires proper attribution of both original and academic work**
-- 📚 **Special requirements for academic publications**
-
-### Original Inspiration
-This work is built upon and extends [Sebastian Lague's Ray Tracing project](https://github.com/SebLague/Ray-Tracing), which is also licensed under the MIT License. The original project provided the foundational Unity architecture and basic ray tracing implementation.
-
-### Academic Usage
-If you use this project in academic research, please cite:
-
-```
-@misc{relativistic_raytracer_2026,
-  title={Real-Time Relativistic Ray Tracing in Unity: A Comparative Study of Schwarzschild and Kerr Metrics},
-  author={Your Name and Collaborators},
-  year={2026},
-  howpublished={SIBGRAPI 2026 Conference},
-  note={Extended from Sebastian Lague's Ray Tracing implementation}
-}
-```
-
 ### Unity Asset Credits
 - **Planetary Textures**: NASA/JPL public domain imagery
 - **Skybox Environments**: Various Creative Commons sources
