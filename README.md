@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![HLSL](https://img.shields.io/badge/HLSL-Shader%20Model%205.0-orange.svg)](https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl)
 
+(Visit Vulkan Implementation: https://github.com/tucoff/relativistic-raytracer-vulkan)
+
 ## 📋 Project Overview
 
 This project implements a **real-time relativistic raytracer** using **Unity Engine and HLSL shaders**, developed as part of academic research and presented at SIBGRAPI 2026. The system simulates light propagation in curved spacetime, enabling visualization of relativistic phenomena such as gravitational lensing, frame-dragging, redshift, and black hole event horizons.
